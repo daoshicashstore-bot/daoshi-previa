@@ -1004,6 +1004,90 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .resumo span{font-family:var(--mono);font-size:9px;letter-spacing:.12em;
   text-transform:uppercase;color:var(--t3)}
 
+/* =====================================================================
+   MARKETPLACE NO FORMATO DO FÓRUM DELA
+
+   A Daoshi mandou o print do fórum #mir4 do Discord e disse: "Voce acha que o
+   gamecoin e o marketplace se parece com o que já temos? Honestamente, eu não
+   acho. É até mesmo inferior."
+
+   Ela está certa. O que eu tinha feito era e-commerce genérico: iconezinho
+   desenhado, tabela de atributos, filtro de "preço mín/máx". O fórum dela é
+   outra coisa, e é melhor:
+
+     - o PRINT é o produto — a pessoa quer VER o inventário, o PP, as skins
+     - o título é livre e em maiúscula, do jeito que gamer escreve
+       ("🔥 VENDO ARBALISTA LV 156 422K PP 🔥")
+     - o filtro é do JOGO: Arqueira, Lanceiro, Maga, Taoista, Guerreiro,
+       Soturna, BOOST, CLANS — não "faixa de preço"
+     - tem COMENTÁRIO, que é onde a negociação acontece e a confiança nasce
+     - tem "há 2h", "NOVO", e a contagem de respostas
+
+   Ninguém compra conta de MMO por tabela. Compra por foto.
+   ===================================================================== */
+.mp-topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 0 12px}
+.mp-busca{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;
+  border:1px solid var(--linha2);background:var(--deep);padding:11px 15px;color:var(--t3)}
+.mp-nova{background:var(--vibrant);color:#fff;font-size:13.5px;font-weight:800;
+  padding:11px 20px;display:flex;align-items:center;gap:8px;flex:none}
+.mp-nova:hover{filter:brightness(1.1)}
+.mp-ord{border:1px solid var(--linha2);background:var(--deep);color:var(--t2);
+  font-size:13px;padding:10px 14px;flex:none}
+
+/* a fila de filtros do jogo, rolando na horizontal como no Discord */
+.mp-chips{display:flex;gap:7px;overflow-x:auto;padding:0 0 14px;scrollbar-width:none;
+  border-bottom:1px solid var(--linha)}
+.mp-chips::-webkit-scrollbar{display:none}
+.mpc{display:flex;align-items:center;gap:7px;white-space:nowrap;flex:none;
+  border:1px solid var(--linha2);background:var(--deep);padding:7px 14px;
+  font-size:13px;color:var(--t2);transition:all .14s}
+.mpc:hover{border-color:var(--cc,var(--magenta));color:var(--txt)}
+.mpc.on{background:color-mix(in srgb,var(--cc,var(--magenta)) 20%,var(--deep));
+  border-color:var(--cc,var(--magenta));color:var(--txt);font-weight:700}
+.mpc i{width:9px;height:9px;border-radius:50%;background:var(--cc,var(--magenta));
+  font-style:normal;flex:none}
+.mpc.sugerir{border-style:dashed;color:var(--t3)}
+.mpc.sugerir:hover{border-color:var(--gold);color:var(--gold)}
+
+/* o card do fórum: foto grande em cima, título, autor, respostas */
+.forum{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
+  gap:14px;padding:18px 0 40px}
+.fp{display:flex;flex-direction:column;text-align:left;overflow:hidden;
+  border:1px solid var(--linha2);background:var(--deep);
+  transition:border-color .16s,transform .16s,box-shadow .16s}
+.fp:hover{border-color:var(--magenta);transform:translateY(-3px);
+  box-shadow:0 14px 30px -20px rgba(var(--esc),.7)}
+.fp-cab{display:flex;align-items:baseline;gap:8px;padding:12px 14px 0;flex-wrap:wrap}
+.fp-au{font-size:12.5px;font-weight:700;color:var(--light)}
+.fp-qd{font-family:var(--mono);font-size:10px;color:var(--t3)}
+.fp-novo{margin-left:auto;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;
+  background:var(--info);color:#fff;padding:2px 7px;font-weight:700}
+.fp-t{font-size:15.5px;font-weight:800;line-height:1.3;padding:7px 14px 10px;
+  text-transform:uppercase;letter-spacing:-.01em}
+/* a galeria: a primeira foto grande, as outras menores ao lado */
+.fp-fotos{display:grid;grid-template-columns:1.35fr 1fr;gap:3px;
+  background:var(--linha);aspect-ratio:16/10;position:relative}
+.fp-fotos.uma{grid-template-columns:1fr}
+.fp-col{display:grid;grid-template-rows:1fr 1fr;gap:3px;min-height:0}
+.fp-f{position:relative;overflow:hidden;background:linear-gradient(150deg,var(--medium),var(--dark))}
+.fp-f img{width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .35s}
+.fp:hover .fp-f img{transform:scale(1.05)}
+.fp-mais{position:absolute;right:6px;bottom:6px;font-family:var(--mono);font-size:10px;
+  font-weight:700;background:rgba(var(--esc),.78);color:#fff;padding:3px 8px;
+  display:flex;align-items:center;gap:5px}
+.fp-cls{position:absolute;left:8px;bottom:8px;display:flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:700;background:rgba(var(--esc),.72);color:#fff;padding:4px 10px}
+.fp-cls i{width:8px;height:8px;border-radius:50%;background:var(--cc);font-style:normal}
+.fp-pe{display:flex;align-items:center;gap:12px;padding:11px 14px;margin-top:auto;
+  border-top:1px solid var(--linha)}
+.fp-cm{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--t3)}
+.fp-pr{margin-left:auto;font-size:16px;font-weight:800;color:var(--gold);
+  font-variant-numeric:tabular-nums}
+.fp-tags{display:flex;gap:5px;flex-wrap:wrap;padding:0 14px 11px}
+.fp-at{display:flex;gap:14px;flex-wrap:wrap;padding:0 14px 11px;font-size:12px;color:var(--t3)}
+.fp-at b{color:var(--txt);font-variant-numeric:tabular-nums}
+
 /* ================= MARKETPLACE: filtro na lateral + card com atributos ==== */
 .mpg{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start;padding:16px 0 40px}
 .filtro-lat{border:1px solid var(--linha2);background:var(--deep);position:sticky;top:76px;
@@ -2229,6 +2313,7 @@ let mgAberto = null;                     // minigame aberto
 let busca = "";                          // o que a pessoa digitou na busca
 let anuncioAberto = null;                // "chave:indice" do anúncio aberto
 let vendedorAberto = null;               // perfil público de outra pessoa
+let mpJogo = null;                       // marketplace: jogo escolhido no fórum
 
 /* ---------------------------------------------------------------------
    ICONE DO PACOTE, desenhado em bloco no estilo 90.
@@ -4182,6 +4267,51 @@ const ANUNCIOS = {
      tags:["e-mail trocável","primeira mão","sem vínculo","com print","contrato"],
      vend:{n:"Jade_14", pat:"Mercador", cor:"#ffd700", rep:4.8, neg:64, resp:"14 min"}},
   ],
+  /* ---- MIR4: 59% das vendas dela e o jogo que mais dá problema, então é
+     ele que precisa parecer um fórum cheio. Os títulos seguem o jeito que os
+     clientes dela escrevem no Discord: maiúscula, PP na frente, emoji. ---- */
+  mir4: [
+    {n:"🔥 VENDO ARBALISTA LV 156 422K PP 🔥", g:"MIR4", grau:"Diamante", gr:"var(--light)",
+     p:1890, at:[["Poder","422k"],["Nível",156],["Classe","Arqueira"],["Servidor","SP/006"]],
+     comp:94, gar:"contrato + mediação", fam:"moeda",
+     tags:["e-mail original","primeira mão","sem vínculo","com print","contrato"],
+     vend:{n:"Corvo_10", pat:"Mestre", cor:"#b366ff", rep:4.9, neg:212, resp:"4 min"}},
+    {n:"MAGA 655K A VENDA", g:"MIR4", grau:"Diamante", gr:"var(--light)",
+     p:2640, at:[["Poder","655k"],["Nível",162],["Classe","Maga"],["Darksteel","91k"]],
+     comp:97, gar:"contrato + mediação", fam:"moeda",
+     tags:["e-mail original","primeira mão","vídeo","contrato","sem banimento"],
+     vend:{n:"Névoa_13", pat:"Imortal", cor:"#ff1493", rep:5.0, neg:406, resp:"2 min"}},
+    {n:"SELL ARBA 660K", g:"MIR4", grau:"Diamante", gr:"var(--light)",
+     p:2780, at:[["Poder","660k"],["Nível",164],["Classe","Arqueira"],["Espíritos",42]],
+     comp:96, gar:"contrato + mediação", fam:"moeda",
+     tags:["e-mail trocável","segunda mão","com print","contrato"],
+     vend:{n:"Lótus_11", pat:"Mercador", cor:"#ffd700", rep:4.7, neg:88, resp:"21 min"}},
+    {n:"TROCA DE CONTA — LANCEIRO 180K", g:"MIR4", grau:"Ouro", gr:"var(--gold)",
+     p:640, at:[["Poder","180k"],["Nível",132],["Classe","Lanceiro"],["PK","2k"]],
+     comp:61, gar:"contrato + mediação", fam:"moeda",
+     tags:["e-mail original","primeira mão","entrega na hora","contrato"],
+     vend:{n:"Âmbar_12", pat:"Mercador", cor:"#ffd700", rep:5.0, neg:141, resp:"7 min"}},
+    {n:"VENDO ALT TAOISTA 95K PP", g:"MIR4", grau:"Prata", gr:"var(--t2)",
+     p:310, at:[["Poder","95k"],["Nível",118],["Classe","Taoista"],["Servidor","007/008"]],
+     comp:44, gar:"contrato + mediação", fam:"moeda",
+     tags:["sem e-mail","segunda mão","até 24 h","contrato"],
+     vend:{n:"Brasa_15", pat:"Viajante", cor:"#bdb6d4", rep:4.2, neg:9, resp:"1 h"}},
+    {n:"SOTURNA 340K — COM ITENS TRADÁVEIS", g:"MIR4", grau:"Ouro", gr:"var(--gold)",
+     p:1240, at:[["Poder","340k"],["Nível",149],["Classe","Soturna"],["Tier gear","T5"]],
+     comp:78, gar:"contrato + selo de inventário", fam:"moeda",
+     tags:["e-mail original","primeira mão","vídeo","contrato"],
+     vend:{n:"Jade_14", pat:"Mercador", cor:"#ffd700", rep:4.8, neg:64, resp:"14 min"}},
+    {n:"GUERREIRO 210K + CLÃ CORAÇÃO DE LEÃO", g:"MIR4", grau:"Ouro", gr:"var(--gold)",
+     p:790, at:[["Poder","210k"],["Nível",138],["Classe","Guerreiro"],["Clã","Coração de Leão"]],
+     comp:70, gar:"contrato + mediação", fam:"moeda",
+     tags:["e-mail trocável","primeira mão","sem vínculo","com print","contrato"],
+     vend:{n:"Corvo_10", pat:"Mestre", cor:"#b366ff", rep:4.9, neg:212, resp:"4 min"}},
+    {n:"conta nft — transferência direta", g:"MIR4", grau:"Diamante", gr:"var(--light)",
+     p:3450, at:[["Poder","712k"],["Nível",168],["Classe","Maga"],["NFT","sim"]],
+     comp:99, gar:"transferência NFT — sem e-mail no meio", fam:"moeda",
+     tags:["primeira mão","sem vínculo","vídeo","contrato","sem banimento"],
+     vend:{n:"Névoa_13", pat:"Imortal", cor:"#ff1493", rep:5.0, neg:406, resp:"2 min"}},
+  ],
   reroll: [
     {n:"Genshin reroll — 3 five-stars", g:"Genshin Impact", grau:"Ouro", gr:"var(--gold)",
      p:78, at:[["5★ garantidos",3],["Primogemas","12k"],["Servidor","América"],["Troca","24 h"]],
@@ -4217,9 +4347,66 @@ const ANUNCIOS = {
      vend:{n:"Jade_14", pat:"Mercador", cor:"#ffd700", rep:4.8, neg:64, resp:"14 min"}},
   ],
 };
+/* =====================================================================
+   OS FILTROS SÃO DO JOGO, não de e-commerce
+
+   No fórum dela o MIR4 filtra por Arqueira, Lanceiro, Maga, Taoista,
+   Guerreiro, Soturna, BOOST, CLANS. Isso é o que o comprador procura.
+   "Faixa de preço" ninguém usa para escolher personagem.
+
+   A ideia dela: filtro pré-definido por jogo, MAIS o cliente podendo sugerir
+   um filtro novo que entra em análise e vira oficial. Assim a lista cresce com
+   quem usa, em vez de com quem adivinha.
+   ===================================================================== */
+const FILTROS_JOGO = {
+  "MIR4": {classes: [["Arqueira","#e8e0f0"],["Lanceiro","#e8e0f0"],["Maga","#ff4d6d"],
+                     ["Taoista","#3d8ab5"],["Guerreiro","#d2691e"],["Soturna","#a52ef5"]],
+           extras: ["BOOST","CLANS","Coração de Leão","NFT","Itens tradáveis"],
+           atrib: ["Poder (PP)","Nível","Servidor","Tier do gear","PK"]},
+  "Genshin Impact": {classes: [["Anemo","#74c2a8"],["Geo","#e0a52e"],["Electro","#a06fd6"],
+                               ["Hydro","#3d8ab5"],["Pyro","#e0483c"],["Cryo","#7fd8ff"]],
+           extras: ["AR 55+","Whale","F2P","Sem vínculo"],
+           atrib: ["AR","5★ personagens","5★ armas","Constelações"]},
+  "Nightcrows": {classes: [["Arqueira","#e8e0f0"],["Guerreiro","#d2691e"],["Maga","#ff4d6d"]],
+           extras: ["BOOST","TWD"], atrib: ["Poder","Classe","Servidor","Pets"]},
+  "Honkai Star Rail": {classes: [["Destruição","#e0483c"],["Caça","#e0a52e"],
+                                 ["Erudição","#3d8ab5"],["Harmonia","#74c2a8"]],
+           extras: ["Whale","F2P"], atrib: ["Nível","5★","Eidolons","Cones"]},
+  "Valorant": {classes: [["Duelista","#e0483c"],["Sentinela","#3d8ab5"],
+                         ["Controlador","#a52ef5"],["Iniciador","#74c2a8"]],
+           extras: ["Imortal+","Radiante","Com faca"], atrib: ["Elo","Skins","Facas","Agentes"]},
+  "Odin Valhalla": {classes: [["Valquíria","#e8e0f0"],["Guerreiro","#d2691e"],
+                              ["Feiticeira","#a52ef5"]],
+           extras: ["BOOST"], atrib: ["Poder","Classe","Servidor","Montarias"]},
+};
+function filtrosDoJogo(nome){
+  return FILTROS_JOGO[nome] || {classes: [], extras: [], atrib: []};
+}
+/* Onde este anúncio realmente mora. As contas do MIR4 vivem numa lista
+   própria e são mostradas junto com as outras, então `indexOf` na lista da aba
+   devolvia -1 e o clique abria o anúncio errado. */
+function ondeMora(a){
+  for (const k in ANUNCIOS){
+    const i = ANUNCIOS[k].indexOf(a);
+    if (i >= 0) return k + ":" + i;
+  }
+  return "contas:0";
+}
+/* quanto tempo faz, do jeito que o Discord escreve */
+function faz(h){
+  if (h < 1) return "agora";
+  if (h < 24) return "há " + Math.round(h) + "h";
+  const d = Math.round(h / 24);
+  return "há " + d + (d === 1 ? " dia" : "d");
+}
+
 function telaAnuncios(){
   const chave = aba === "servicos" ? "servicos" : (aba === "reroll" ? "reroll" : "contas");
-  let lista = ANUNCIOS[chave].slice();
+  /* as contas do MIR4 entram junto com as outras: ele é 59% das vendas dela e
+     precisa dominar a vitrine, como domina o Discord */
+  let lista = (chave === "contas"
+    ? ANUNCIOS.mir4.concat(ANUNCIOS.contas)
+    : ANUNCIOS[chave]).slice();
   if (mpOrdem === "menor") lista.sort((a,b) => a.p - b.p);
   else if (mpOrdem === "maior") lista.sort((a,b) => b.p - a.p);
 
@@ -4257,7 +4444,76 @@ function telaAnuncios(){
       '</ul></div>' +
     '</div></div>';
 
-  return '<div class="env">' + combinado + '<div class="mpg">' +
+  /* ---------------- o FÓRUM, no formato do Discord dela ---------------- */
+  const jogosMp = Array.from(new Set(lista.map(a => a.g)));
+  const jogoAtivo = mpJogo && jogosMp.indexOf(mpJogo) >= 0 ? mpJogo : jogosMp[0];
+  const F = filtrosDoJogo(jogoAtivo);
+  const doJogo = lista.filter(a => a.g === jogoAtivo);
+
+  /* as fotos: uso as capas dos jogos como recheio, porque print de conta de
+     verdade é dado de cliente e não entra num protótipo que fica no ar */
+  const fotos = a => {
+    const g = D.jogos.find(x => x.nome === a.g) ||
+              D.jogos.find(x => a.g.toLowerCase().indexOf(x.ch) >= 0);
+    const c = g ? capaDe(g) : null;
+    const n = 2 + (a.n.length % 4);          /* 2 a 5 fotos, estável por anúncio */
+    const foto = () => c ? '<img src="' + c + '" alt="">' : "";
+    return '<div class="fp-fotos">' +
+      '<div class="fp-f">' + foto() +
+        '<span class="fp-cls" style="--cc:' + (F.classes[a.n.length % Math.max(1, F.classes.length)] || ["",a.gr])[1] + '">' +
+        '<i></i>' + esc((F.classes[a.n.length % Math.max(1, F.classes.length)] || ["Conta"])[0]) +
+        '</span></div>' +
+      '<div class="fp-col"><div class="fp-f">' + foto() + '</div>' +
+      '<div class="fp-f">' + foto() +
+      '<span class="fp-mais">&#9635; +' + n + '</span></div></div>' +
+    '</div>';
+  };
+
+  const forum =
+    '<div class="mp-topo">' +
+      '<div class="mp-busca">&#9906;&nbsp; Buscar ou criar postagem…</div>' +
+      '<button class="mp-ord">&#8645; Ordenar e ver</button>' +
+      '<button class="mp-nova">&#10010; Nova postagem</button>' +
+    '</div>' +
+    /* linha 1: qual jogo */
+    '<div class="mp-chips" style="border:0;padding-bottom:9px">' + jogosMp.map(j =>
+      '<button class="mpc ' + (j === jogoAtivo ? "on" : "") + '" data-mpjogo="' + esc(j) +
+      '" style="--cc:var(--magenta)"><i></i>' + esc(j) + '</button>').join("") + '</div>' +
+    /* linha 2: os filtros daquele jogo */
+    '<div class="mp-chips">' +
+      '<button class="mpc on" style="--cc:var(--gold)">Todos</button>' +
+      F.classes.map(c => '<button class="mpc" style="--cc:' + c[1] + '"><i></i>' +
+        esc(c[0]) + '</button>').join("") +
+      F.extras.map(e => '<button class="mpc" style="--cc:var(--light)">' +
+        esc(e) + '</button>').join("") +
+      '<button class="mpc sugerir" data-sugfiltro="' + esc(jogoAtivo) + '">' +
+      '&#10010; sugerir filtro</button>' +
+    '</div>' +
+    '<div class="forum">' + doJogo.map((a, k) => {
+      const horas = [2, 26, 1, 74, 6, 96][k % 6];
+      return '<button class="fp" data-anabre="' + ondeMora(a) + '">' +
+      '<span class="fp-cab"><span class="fp-au">' + esc((a.vend || {}).n || "vendedor") + '</span>' +
+      '<span class="fp-qd">Postado ' + faz(horas) + '</span>' +
+      (horas < 12 ? '<span class="fp-novo">NOVO</span>' : "") + '</span>' +
+      '<span class="fp-t">' + esc(a.n) + '</span>' +
+      fotos(a) +
+      '<span class="fp-at">' + a.at.slice(0, 3).map(x =>
+        '<span>' + esc(x[0]) + ' <b>' + esc(x[1]) + '</b></span>').join("") + '</span>' +
+      '<span class="fp-tags vend">' + (a.tags || []).slice(0, 3).map(t => {
+        const T = TAGS[t] || {c: "#b9a9cc"};
+        return '<span class="vt" style="--vc:' + T.c + '">' + esc(t) + '</span>'; }).join("") +
+      '</span>' +
+      '<span class="fp-pe"><span class="fp-cm">&#9993; ' + ((a.n.length * 3) % 14) +
+      '</span>' + marca("selo") +
+      '<span class="fp-pr">' + brl(a.p) + '</span></span>' +
+      '</button>';
+    }).join("") + '</div>';
+
+  return '<div class="env larga">' + combinado + forum +
+    /* a lista antiga continua embaixo, como "todos os anúncios" — a busca
+       fina por atributo ainda serve para quem sabe o que quer */
+    placa("Todos os anúncios", lista.length + " no total") +
+    '<div class="mpg" style="padding-top:14px">' +
     '<div class="filtro-lat"><h4>Filtrar anúncios</h4>' +
       '<div class="fgrupo"><label>buscar</label>' +
         '<input class="fpar" style="width:100%" placeholder="nome do anúncio…"></div>' +
@@ -4294,8 +4550,7 @@ function telaAnuncios(){
       '</select></span></div>' +
 
     '<div class="cards">' + lista.map(a =>
-      '<button class="cd" style="--gr:' + a.gr + '" data-anabre="' + chave + ':' +
-        ANUNCIOS[chave].indexOf(a) + '">' +
+      '<button class="cd" style="--gr:' + a.gr + '" data-anabre="' + ondeMora(a) + '">' +
       '<span class="topo-g"></span>' +
       '<span class="cat">' + esc(a.g) + ' &middot; ' + esc(a.grau) + '</span>' +
       '<span class="nm2">' + esc(a.n) + '</span>' +
@@ -6651,6 +6906,17 @@ function render(){
                         render(); window.scrollTo(0,0); });
   document.querySelectorAll("[data-anfecha]").forEach(b =>
     b.onclick = () => { anuncioAberto = null; render(); window.scrollTo(0,0); });
+  document.querySelectorAll("[data-mpjogo]").forEach(b =>
+    b.onclick = () => { mpJogo = b.dataset.mpjogo; render(); });
+  /* a ideia dela: o cliente sugere um filtro que não existe, entra em análise
+     e vira filtro oficial. A lista cresce com quem usa. */
+  document.querySelectorAll("[data-sugfiltro]").forEach(b =>
+    b.onclick = () => {
+      const q = prompt("Que filtro falta aqui no " + b.dataset.sugfiltro + "?\n\n" +
+        "A Daoshi analisa e, se fizer sentido, ele vira filtro para todo mundo.");
+      if (q && q.trim()) alert("Anotado: “" + q.trim() + "”.\n\n" +
+        "Entra na fila de análise. Se virar filtro, você é avisado.");
+    });
   document.querySelectorAll("[data-vdabre]").forEach(b =>
     b.onclick = () => { vendedorAberto = b.dataset.vdabre; render(); window.scrollTo(0,0); });
   document.querySelectorAll("[data-vdfecha]").forEach(b =>
