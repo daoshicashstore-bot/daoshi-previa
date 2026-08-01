@@ -375,6 +375,20 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     radial-gradient(900px 600px at 50% 116%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 64%),
     var(--dark)}
 
+/* a entrada do Gamecoin: comprar · vender · encomendar, antes da vitrine */
+.gcporta{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:11px;
+  margin-top:18px}
+.gcp-c{display:flex;flex-direction:column;gap:6px;text-align:left;padding:17px 18px;
+  border:1px solid var(--linha2);border-top:3px solid var(--gc);background:var(--deep);
+  transition:transform .16s,border-color .16s,background .16s}
+.gcp-c:hover{transform:translateY(-2px);background:var(--medium);border-color:var(--gc)}
+.gcp-ic{font-size:20px;color:var(--gc);line-height:1}
+.gcp-t{font-size:16px;font-weight:700;line-height:1.25}
+.gcp-d{font-size:12.8px;color:var(--t2);line-height:1.55}
+.gcp-d b{color:var(--txt)}
+.gcp-go{margin-top:5px;font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--gc)}
+
 /* ================= AFILIADO E ORGANIZAÇÕES ================= */
 .af-faixas{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:11px}
 .af-f{border:1px solid var(--linha2);background:var(--deep);padding:16px 17px;position:relative}
@@ -1993,10 +2007,31 @@ a.rod-l:hover{color:var(--rc)}
    os passos numerados, com o VALOR em primeiro. À direita o carrinho.
    ===================================================================== */
 .env.larga{max-width:1400px}
-.jtopo{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:16px;
+/* O BANNER DO JOGO.
+   O irmão da Daoshi: "quando seleciona o game, tem um quadradão enorme vazio;
+   nesse quadrado poderia ter um banner do game para a pessoa saber que tá no
+   game certo". Ele está certo — era um retângulo de degradê e mais nada.
+   Agora a CAPA do jogo entra como fundo. Ela só ficou livre para isso porque o
+   ícone do quadrado virou o da Play Store; antes a capa estava ali, espremida
+   em 86 px.
+   A arte fica à DIREITA e some por baixo do texto: `--capa` é pintada com
+   máscara, para o nome e o preço nunca disputarem legibilidade com ela. */
+.jtopo{position:relative;overflow:hidden;
+  display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:16px;
   padding:16px;border:1px solid var(--linha2);background:
     repeating-linear-gradient(135deg, rgba(var(--cla),.012) 0 2px, transparent 2px 6px),
     linear-gradient(100deg, color-mix(in srgb, var(--c) 16%, var(--medium)), var(--deep) 62%)}
+.jt-bg{position:absolute;inset:0;background-image:var(--capa);background-size:cover;
+  background-position:center 32%;opacity:.30;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,transparent 34%,#000 78%);
+  mask-image:linear-gradient(90deg,transparent 0%,transparent 34%,#000 78%)}
+.jtopo > *:not(.jt-bg){position:relative;z-index:1}
+@media(max-width:700px){
+  /* no celular o texto ocupa a largura toda: a arte vira um véu de cima */
+  .jt-bg{opacity:.16;
+    -webkit-mask-image:linear-gradient(180deg,#000,transparent 70%);
+    mask-image:linear-gradient(180deg,#000,transparent 70%)}
+}
 .jt-art{width:86px;height:86px;flex:none;overflow:hidden;border:1px solid var(--linha2);
   display:grid;place-items:center;background:linear-gradient(150deg,var(--medium),var(--dark))}
 .jt-art img{width:100%;height:100%;object-fit:cover;display:block}
@@ -3422,6 +3457,8 @@ function telaGames(){
       /* ---- cabeçalho compacto: ícone, nome, o que vendemos, e as abas de
          método. Tudo que a pessoa precisa saber antes de escolher o valor. ---- */
       '<div class="jtopo" style="--c:' + c + '">' +
+        /* a capa vira o banner do fundo — o "quadradão vazio" resolvido */
+        (img ? '<span class="jt-bg" style="--capa:url(' + img + ')"></span>' : "") +
         /* A Daoshi: "ícone da playstore tá só em alguns lugares — não no
            principal". Era aqui: o quadrado grande usava a CAPA (a arte larga,
            escura, de baixo contraste) enquanto o ícone limpo de 512 px ficava
@@ -4492,6 +4529,36 @@ function telaGCJogos(){
   const fechados = D.gcJogos.filter(g => !g.real);
 
   return '<div class="env">' + bannerGC() +
+
+    /* O COMEÇO DO FLUXO.
+       O irmão da Daoshi: "quando a pessoa quer comprar moedas de jogo, aparece
+       o jogo em fileira, mas não pode ser o início disso". Ele está certo: a
+       fileira de jogos responde "qual jogo", mas a primeira pergunta de quem
+       chega aqui é outra — <b>eu quero comprar ou vender?</b>. Sem isso, quem
+       veio vender fica procurando onde clicar no meio de uma vitrine de compra. */
+    '<div class="gcporta">' +
+      ['<button class="gcp-c" data-gcvez="comprar" style="--gc:var(--verde)">' +
+       '<span class="gcp-ic">&#8659;</span>' +
+       '<span class="gcp-t">Quero comprar moeda</span>' +
+       '<span class="gcp-d">Escolha o jogo, veja quem está vendendo e por quanto. ' +
+       'O dinheiro fica com a Daoshi até você confirmar que recebeu.</span>' +
+       '<span class="gcp-go">ver os mercados &rarr;</span></button>',
+
+       '<button class="gcp-c" data-gcvez="vender" style="--gc:var(--gold)">' +
+       '<span class="gcp-ic">&#8657;</span>' +
+       '<span class="gcp-t">Quero vender minha moeda</span>' +
+       '<span class="gcp-d">Anuncie o quanto tem e por quanto quer. Você vê ' +
+       '<b>quanto recebe limpo</b> antes de publicar, já com a taxa da sua patente.</span>' +
+       '<span class="gcp-go">anunciar &rarr;</span></button>',
+
+       '<button class="gcp-c" data-gcvez="encomenda" style="--gc:var(--info)">' +
+       '<span class="gcp-ic">&#9744;</span>' +
+       '<span class="gcp-t">Não achei o que eu queria</span>' +
+       '<span class="gcp-d">Deixe uma encomenda dizendo jogo, quantidade e quanto ' +
+       'paga. Quem tiver aparece — funciona ao contrário da vitrine.</span>' +
+       '<span class="gcp-go">fazer encomenda &rarr;</span></button>'
+      ].join("") + '</div>' +
+
     placa("Mercados abertos", abertos.length + (abertos.length === 1 ? " jogo" : " jogos")) +
     '<div class="gcgrade" style="border:1px solid var(--linha2);border-top:0;padding:14px">' +
     abertos.map(g =>
@@ -8254,6 +8321,19 @@ function render(){
       else if (v === "blog"){ porta = "store"; aba = "comunidade"; }
       else { aba = "perfil"; perfilAba = v; }
       render(); window.scrollTo(0,0);
+    });
+  /* a entrada do Gamecoin: comprar leva para a vitrine logo abaixo; vender e
+     encomendar são abas próprias e trocam de tela */
+  document.querySelectorAll("[data-gcvez]").forEach(b =>
+    b.onclick = () => {
+      const v = b.dataset.gcvez;
+      if (v === "comprar"){
+        const alvo = document.querySelector(".gcgrade");
+        if (alvo) alvo.scrollIntoView({behavior: "smooth", block: "center"});
+        return;
+      }
+      aba = v === "vender" ? "vender" : "encomenda";
+      gcJogo = null; render(); window.scrollTo(0, 0);
     });
   /* organização: para onde vai o cashback */
   document.querySelectorAll("[data-orgop]").forEach(b =>
