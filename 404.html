@@ -1666,6 +1666,145 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .md .mn{display:block;font-size:11px;font-weight:700;margin-top:4px;line-height:1.25}
 .md .mo{display:block;font-size:11px;color:var(--t3);margin-top:2px}
 
+/* =====================================================================
+   O PERFIL EM TRÊS COLUNAS — desenho de 02/08.
+
+   `260px | resto | 300px`. As laterais são fixas de propósito: se as três
+   fossem fracionárias, o menu encolheria junto com a tela e "Escada de
+   patentes" quebraria em duas linhas antes de o meio ficar apertado.
+   ===================================================================== */
+.pf-grade{display:grid;grid-template-columns:260px minmax(0,1fr) 300px;
+  gap:18px;align-items:start;padding-top:16px}
+.pf-lado,.pf-dir{display:flex;flex-direction:column;gap:12px;position:sticky;top:78px}
+.pf-meio{min-width:0}
+.pf-cab h1{font-size:25px;font-weight:800;line-height:1.15}
+.pf-cab p{color:var(--t2);font-size:14px;margin-top:5px}
+/* os quatro cartões cabem em UMA linha dentro da coluna do meio, como no
+   desenho. Com o minmax(210px) herdado da carteira eles quebravam 3+1. */
+.pf-meio .cart-topo{margin-top:16px;
+  grid-template-columns:repeat(auto-fit,minmax(155px,1fr))}
+.pf-meio .cart-cx{padding:13px}
+
+/* A MINIATURA DO JOGO em cada linha de pedido.
+   `.anuncio` é uma grade de 4 colunas (`1fr auto auto auto`) usada em 25
+   lugares do site. Pôr a capinha como primeiro filho sem mais nada faria ela
+   ocupar a coluna do `1fr` e empurrar tudo — em TODAS as outras telas. Por
+   isso a coluna extra só existe em `.anuncio.com-th`. */
+.anuncio.com-th{grid-template-columns:auto minmax(0,1fr) auto auto auto}
+.an-th{width:52px;height:52px;display:grid;place-items:center;
+  overflow:hidden;border:1px solid var(--linha2);background:var(--medium)}
+.an-th img{width:100%;height:100%;object-fit:cover;display:block}
+.an-th i{font-family:var(--mono);font-size:13px;font-weight:800;
+  font-style:normal;color:var(--t3)}
+.an-mais{font-style:normal;font-family:var(--mono);font-size:10px;
+  color:var(--gold);border:1px solid var(--gold);padding:1px 5px;margin-left:5px}
+.an-sep{font-size:11.5px;color:var(--t3);padding:12px 2px 4px;
+  border-top:1px dashed var(--linha2);margin-top:6px}
+
+/* --- o cartão de identidade do topo do menu --- */
+.pf-cartao{border:1px solid var(--linha2);background:var(--deep);padding:14px}
+.pfc-topo{display:flex;align-items:center;gap:11px}
+.pfc-av{flex:none;width:52px;height:52px;display:grid;place-items:center;
+  border:2px solid var(--pc,var(--gold));background:var(--medium);overflow:hidden}
+.pfc-av img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated}
+.pfc-av b{font-size:19px;font-weight:800;color:var(--pc,var(--gold))}
+.pfc-id{min-width:0;display:flex;flex-direction:column;gap:3px}
+.pfc-id b{font-size:15px;font-weight:800}
+.pfc-pat{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--pc,var(--gold));
+  border:1px solid var(--pc,var(--gold));padding:2px 8px;align-self:flex-start}
+.pf-cartao .xp{margin-top:12px}
+.pfc-xp{font-size:11px;color:var(--t3);margin-top:6px;
+  font-variant-numeric:tabular-nums}
+.pfc-bt{width:100%;margin-top:11px;padding:9px;border:1px solid var(--linha2);
+  background:var(--medium);color:var(--t2);font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:all .16s}
+.pfc-bt:hover{border-color:var(--vibrant);color:var(--vibrant)}
+.pfc-bt i{font-style:normal;font-size:11px}
+
+/* --- o menu: um título por modo, um item por destino --- */
+.pf-menu{border:1px solid var(--linha2);background:var(--deep);
+  display:flex;flex-direction:column;padding:6px 0}
+.pfm-g + .pfm-g{border-top:1px solid var(--linha);margin-top:6px;padding-top:6px}
+.pfm-t{padding:8px 14px 6px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--t3);
+  display:flex;flex-direction:column;gap:2px}
+.pfm-t i{font-style:normal;font-size:9.5px;letter-spacing:.06em;
+  text-transform:none;opacity:.75}
+.pfm-i{display:flex;align-items:center;gap:10px;width:100%;padding:9px 14px;
+  color:var(--t2);font-size:13px;text-align:left;border-left:3px solid transparent;
+  transition:all .14s}
+.pfm-i:hover{background:var(--medium);color:var(--txt)}
+.pfm-i.on{background:color-mix(in srgb, var(--vibrant) 13%, transparent);
+  color:var(--vibrant);border-left-color:var(--vibrant);font-weight:700}
+.pfi-ic{flex:none;font-size:11px;opacity:.8}
+.pfi-n{flex:1;min-width:0}
+.pfi-c{flex:none;background:var(--magenta);color:#fff;font-size:10px;
+  font-weight:800;min-width:17px;height:17px;display:grid;place-items:center;
+  padding:0 4px}
+
+/* --- a caixa de ajuda do pé --- */
+.pf-ajuda{border:1px solid var(--linha2);background:var(--deep);padding:14px}
+.pfa-t{font-size:13.5px;font-weight:800;display:flex;align-items:center;gap:8px}
+.pfa-t span{color:var(--vibrant)}
+.pf-ajuda p{font-size:12px;color:var(--t2);margin-top:7px;line-height:1.45}
+.pfa-bt{width:100%;margin-top:11px;padding:9px;background:var(--vibrant);
+  color:#fff;font-size:12px;font-weight:800;transition:filter .14s}
+.pfa-bt:hover{filter:brightness(1.12)}
+
+/* --- a coluna da direita --- */
+.pfd-cx{border:1px solid var(--linha2);background:var(--deep);padding:14px}
+.pfd-t{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px;
+  padding-bottom:10px;border-bottom:1px solid var(--linha)}
+.pfd-t span{color:var(--vibrant);font-size:11px}
+.pfd-n{margin-left:auto;background:var(--magenta);color:#fff;font-size:10px;
+  min-width:17px;height:17px;display:grid;place-items:center;padding:0 4px}
+.pfd-lin{display:flex;flex-direction:column}
+.pfd-l{display:flex;align-items:flex-start;gap:10px;padding:11px 0;
+  border-bottom:1px solid var(--linha)}
+.pfd-l:last-child{border-bottom:0;padding-bottom:2px}
+.pfd-p{flex:none;width:9px;height:9px;margin-top:4px;border-radius:50%;
+  border:2px solid var(--t3)}
+.pfd-p.ok{border-color:var(--verde);background:var(--verde)}
+.pfd-i{flex:none;width:22px;height:22px;display:grid;place-items:center;
+  font-size:11px;color:var(--vc,var(--gold));
+  border:1px solid color-mix(in srgb, var(--vc,var(--gold)) 55%, transparent)}
+.pfd-c{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pfd-c b{font-size:12.5px;font-weight:700;line-height:1.3}
+.pfd-c i{font-style:normal;font-size:11px;color:var(--t3);line-height:1.3}
+.pfd-q{flex:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--t3);text-align:right;line-height:1.5}
+.pfd-v{flex:none;font-family:var(--mono);font-size:9px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);
+  padding:2px 6px;white-space:nowrap}
+.pfd-vazio{font-size:12px;color:var(--t3);line-height:1.5;padding-top:11px}
+.pfd-mais{width:100%;margin-top:11px;padding:8px;color:var(--vibrant);
+  font-size:12px;font-weight:700;display:flex;align-items:center;
+  justify-content:center;gap:7px}
+.pfd-mais:hover{text-decoration:underline}
+.pfd-mais i{font-style:normal}
+.pfd-prot{border:1px solid var(--gold);padding:14px;display:flex;gap:11px;
+  align-items:center;
+  background:linear-gradient(135deg, color-mix(in srgb,var(--gold) 15%,var(--deep)),
+    var(--deep))}
+.pfd-prot img{flex:none;width:46px;image-rendering:pixelated}
+.pfd-prot b{font-size:13px;font-weight:800;color:var(--gold)}
+.pfd-prot p{font-size:11.5px;color:var(--t2);margin-top:5px;line-height:1.45}
+
+/* nas telas médias a coluna da direita sai antes da esquerda: o menu é
+   navegação (sem ele a pessoa não chega a lugar nenhum), a direita é resumo */
+@media(max-width:1240px){
+  .pf-grade{grid-template-columns:240px minmax(0,1fr)}
+  .pf-dir{display:none}
+}
+@media(max-width:860px){
+  .pf-grade{grid-template-columns:1fr}
+  .pf-lado{position:static}
+  .pf-menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+  .pfm-g{display:contents}
+  .pfm-t{grid-column:1/-1}
+}
+
 /* carteira e extrato */
 .cart-topo{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
 .cart-cx{border:1px solid var(--linha2);padding:16px;
@@ -11356,16 +11495,13 @@ function telaPerfil(){
   if (!ABAS_MODO[pfModo].some(x => x[0] === perfilAba)) perfilAba = ABAS_MODO[pfModo][0][0];
   const corM = (MODOS_PERFIL.find(m => m[0] === pfModo) || MODOS_PERFIL[0])[3];
 
-  const modos = '<div class="pf-modos">' + MODOS_PERFIL.map(m =>
-    '<button class="pf-m ' + (m[0] === pfModo ? "on" : "") + '" data-pfmodo="' + m[0] +
-    '" style="--mc2:' + m[3] + '">' +
-    (m[0] === "chats" ? '<span class="bad">2</span>' : "") +
-    '<b>' + (m[0] === "privado" ? "&#9679; " : m[0] === "chats" ? "&#9634; " : "&#9673; ") +
-    esc(m[1]) + '</b><span class="oo">' + esc(m[2]) + '</span></button>').join("") + '</div>';
-
-  const sub = '<div class="abas2" style="margin-top:12px">' + ABAS_MODO[pfModo].map(a =>
-    '<button class="ab2 ' + (a[0] === perfilAba ? "on" : "") + '" data-pfaba="' + a[0] + '">' +
-    esc(a[1]) + '</button>').join("") + '</div>';
+  /* A FILEIRA DE MODOS E A FILEIRA DE ABAS SAÍRAM DAQUI (02/08).
+     As duas viraram o menu lateral, seguindo o desenho dela. Repetir os
+     mesmos destinos em cima E na lateral seria pior que qualquer um dos
+     dois sozinho — a pessoa fica sem saber qual dos dois manda. Os alvos de
+     clique (`data-pfmodo`, `data-pfaba`) são os mesmos, então o `render` não
+     mudou nada. */
+  const sub = "";
 
   /* a patente tem que ser resolvida ANTES das abas: a aba de patentes usa
      `atual` e `idx`, e eles estavam sendo declarados depois */
@@ -12053,27 +12189,65 @@ function telaPerfil(){
           '</div>';
       }).join("") + '</div>';
   }
-  else
+  else {
+    /* A MINIATURA DO JOGO em cada linha — os três desenhos que ela mandou em
+       02/08 têm a capinha à esquerda de cada pedido, e é o que faz a lista
+       ser lida de relance em vez de ser um bloco de texto. */
+    const mini = ch => {
+      const g = D.jogos.find(x => x.ch === ch);
+      const im = g && (iconeOficial(g) || capaCardDe(g) || posterDe(g));
+      return '<span class="an-th">' + (im ? '<img src="' + im + '" alt="">'
+        : '<i>' + esc(sigla((g && g.nome) || ch)) + '</i>') + '</span>';
+    };
+
+    /* ⚠ OS PEDIDOS DELA VÊM PRIMEIRO, E ANTES NÃO VINHAM.
+       Esta lista era só os três exemplos fixos. Quem comprava de verdade
+       terminava o Pix, vinha em "Meus pedidos" e via os pedidos de outra
+       pessoa — a mesma família do defeito que o amigo dela achou ("foi até o
+       fim, mas não encontrou o número do pedido"). Agora o que ela criou
+       aparece em cima, e os exemplos ficam embaixo, ditos como exemplo. */
+    const meus = (EST.pedidos || []).map(p => {
+      const i = (p.itens || [])[0] || {};
+      const n = (p.itens || []).length;
+      return '<button class="anuncio com-th" style="--c:var(--vibrant)" data-tkabrir="1">' +
+        mini(i.gch) + '<div>' +
+        '<div class="tit">#pedido-' + esc(p.n) + ' — ' + esc(i.jogo || "seu pedido") +
+          (i.rot ? ' &middot; ' + esc(i.rot) : "") +
+          (n > 1 ? ' <i class="an-mais">+' + (n - 1) + '</i>' : "") + '</div>' +
+        '<div class="sub">Store &middot; ' +
+          (p.st === "pago" ? "pago, esperando o fornecedor" : "aguardando o Pix") +
+          ' &middot; ' + esc(p.hora || "agora") + '</div></div>' +
+        '<span class="gar">' + (p.st === "pago" ? "com o fornecedor" : "é a sua vez") +
+        '</span><span class="pr">' + brl(p.total || 0) + '</span>' +
+        '<span class="pt ouro">abrir</span></button>';
+    }).join("");
+
     corpo = '<div class="olho" style="--mc2:' + corM + '"><span class="oi">&#9679;</span>' +
       '<span>Clique num pedido para abrir a <b>conversa dele</b> — é lá que o fornecedor pede ' +
       'código, avisa que você pode logar, e é lá que sai o recibo e a nota.</span></div>' +
-      '<div class="anuncios" style="padding-top:12px">' +
-      '<button class="anuncio" style="--c:var(--vibrant)" data-tkabrir="1"><div>' +
+      '<div class="anuncios" style="padding-top:12px">' + meus +
+      (meus ? '<div class="an-sep">os de baixo são <b>exemplo</b>, para você ver ' +
+              'como fica um pedido em cada estado</div>' : "") +
+      '<button class="anuncio com-th" style="--c:var(--vibrant)" data-tkabrir="1">' +
+      mini("mir4") + '<div>' +
       '<div class="tit">#pedido-4187 — MIR4 · Pacote $10</div>' +
       '<div class="sub">Store &middot; fornecedor pediu o acesso &middot; há 2 min</div></div>' +
       '<span class="gar">é a sua vez</span><span class="pr">' + emReal(9.90) + '</span>' +
       '<span class="pt ouro">abrir</span></button>' +
-      '<button class="anuncio" style="--c:var(--gold)" data-tkabrir="1"><div>' +
+      '<button class="anuncio com-th" style="--c:var(--gold)" data-tkabrir="1">' +
+      mini("ymir") + '<div>' +
       '<div class="tit">YMR-2GX8SARC — 3.150 YMP</div>' +
       '<div class="sub">Gamecoin &middot; vendedor entregando</div></div>' +
       '<span class="gar">esperando print</span><span class="pr">' + brl(384) + '</span>' +
       '<span class="pt dia">acompanhar</span></button>' +
-      '<button class="anuncio" style="--c:var(--verde)" data-tkabrir="1"><div>' +
+      '<button class="anuncio com-th" style="--c:var(--verde)" data-tkabrir="1">' +
+      mini("genshin") + '<div>' +
       '<div class="tit">#pedido-4155 — Genshin · Cristal Genesis 3280</div>' +
       '<div class="sub">Store &middot; entregue e confirmado &middot; 28/07</div></div>' +
       '<span class="gar">nota emitida</span><span class="pr">' + brl(271.19) + '</span>' +
       '<span class="pt prata">ver recibo</span></button>' +
       '</div><div class="bloco"><h3>Onde o negócio parou</h3>' + trilho(4) + '</div>';
+  }
 
   /* FICHA DE PERSONAGEM.
      A pessoa tem que ter orgulho de mostrar isso na comunidade e no
@@ -12109,11 +12283,22 @@ function telaPerfil(){
   /* ---- CABEÇALHO PRIVADO: o painel de controle, não a vitrine.
      No modo privado o que importa não é reputação — é o que está pendente,
      quanto tem de saldo e o que precisa da ação da pessoa hoje. ---- */
+  /* ⚠ ESTE NÚMERO ERA "2" NA MÃO — e o sino, ao lado, dizia 3.
+     Os dois contam a mesma coisa (o que espera a pessoa) e discordavam na
+     mesma tela. Agora saem do mesmo `AVISOS`, e a frase embaixo é montada a
+     partir dos avisos de verdade em vez de descrever dois que eu escolhi. */
+  const meusAvisos = AVISOS.filter(a => a.vez === "minha");
   const cabPrivado =
     '<div class="cart-topo" style="padding-top:16px">' +
       '<div class="cart-cx"><span class="cl">Precisa de você</span>' +
-        '<b class="cv2 am">2</b><span class="cs">um pedido esperando o acesso, ' +
-        'uma entrega para confirmar</span></div>' +
+        '<b class="cv2 am">' + meusAvisos.length + '</b><span class="cs">' +
+        /* UM aviso e a contagem do resto. Com dois escritos por extenso este
+           cartão ficava quatro linhas mais alto que os outros três, e a
+           fileira desalinhava. */
+        (meusAvisos.length
+          ? esc(meusAvisos[0].tt.toLowerCase()) +
+            (meusAvisos.length > 1 ? " e mais " + (meusAvisos.length - 1) : "")
+          : "nada esperando você agora") + '</span></div>' +
       '<div class="cart-cx"><span class="cl">Saldo disponível</span>' +
         '<b class="cv2 vd">' + brl(131.80) + '</b>' +
         '<span class="cs">' + brl(300) + ' em análise de saque</span></div>' +
@@ -12187,8 +12372,143 @@ function telaPerfil(){
       '<b>não aparecem aqui</b> — eles moram no privado.</span></div>' + fichaHTML
     : pfModo === "chats" ? cabChats : cabPrivado;
 
-  return '<div class="env">' + modos + cab + sub +
-    '<div style="padding-top:16px">' + corpo + '</div></div>';
+  /* =====================================================================
+     O PERFIL EM TRÊS COLUNAS — desenho que ela mandou em 02/08.
+
+     Antes era uma coluna só: três modos em cima, seis abas embaixo, e o
+     conteúdo. Funcionava, mas para chegar em "Carteira e saque" a pessoa
+     tinha que entender primeiro que existe um seletor de MODO acima do
+     seletor de ABA — dois níveis empilhados que parecem a mesma coisa.
+
+     No desenho dela os dois viram UM MENU LATERAL, com todos os destinos
+     visíveis de uma vez. Não perdi nada: os mesmos `data-pfmodo` e
+     `data-pfaba` continuam sendo os alvos do clique, e o modo passa a ser
+     um título dentro do menu em vez de uma fileira de botões.
+     ===================================================================== */
+  const IC = D.iconesHome || {};
+  const ICMENU = {
+    pedidos:"&#9634;", carteira:"&#9670;", notas:"&#9635;", contratos:"&#9633;",
+    dados:"&#9679;", seguranca:"&#9673;", chat:"&#9642;", suporte:"&#9679;",
+    ajuda:"&#63;", ficha:"&#9673;", personalizar:"&#9733;", anuncios:"&#9636;",
+    conquistas:"&#9734;", redes:"&#9671;", patentes:"&#9650;"
+  };
+  /* quantos avisos esperam a pessoa, por destino — o mesmo AVISOS que pinta
+     o sino. Contagem inventada em menu é a coisa mais fácil de fazer e a mais
+     inútil: o número tem que bater com o que ela vai achar quando clicar. */
+  const esperando = meusAvisos.length;
+  /* o crachá de "Meus pedidos" conta os pedidos DELA que ainda não foram
+     pagos — não um número escolhido por mim */
+  const CRACHA = {chat: esperando,
+                  pedidos: (EST.pedidos || []).filter(p => p.st !== "pago").length};
+
+  const menuLado =
+    '<aside class="pf-lado">' +
+      /* --- o cartão de identidade, com a barra de XP --- */
+      '<div class="pf-cartao" style="--pc:' + pf.cor + '">' +
+        '<div class="pfc-topo">' +
+          '<span class="pfc-av">' +
+            (D.mascote ? '<img src="' + D.mascote + '" alt="">' : '<b>R</b>') + '</span>' +
+          '<span class="pfc-id"><b>' + esc(pf.nome) + '</b>' +
+            '<span class="pfc-pat">' + esc(pf.patente) + '</span></span>' +
+        '</div>' +
+        '<div class="xp"><i style="width:' + prog + '%"></i></div>' +
+        /* sem "R$" nos dois lados e sem a palavra "faltam": em 260px de menu
+           a linha inteira quebrava no meio do número ("faltam R$ / 3.760,00") */
+        '<div class="pfc-xp">' + brl(pf.volume) + ' de ' +
+          brl(pf.alvo).replace("R$ ", "") +
+          (prox ? ' &middot; ' + esc(prox.t) : ' &middot; no topo') + '</div>' +
+        '<button class="pfc-bt" data-pfmodo="publico">Ver perfil público ' +
+          '<i>&#8599;</i></button>' +
+      '</div>' +
+
+      /* --- o menu: os três modos viraram títulos, as abas viraram itens --- */
+      '<nav class="pf-menu">' + MODOS_PERFIL.map(m =>
+        '<div class="pfm-g">' +
+        '<div class="pfm-t">' + esc(m[1]) + '<i>' + esc(m[2]) + '</i></div>' +
+        ABAS_MODO[m[0]].map(a =>
+          '<button class="pfm-i' + (a[0] === perfilAba ? " on" : "") + '" ' +
+            'data-pfaba="' + a[0] + '">' +
+          '<span class="pfi-ic">' + (ICMENU[a[0]] || "&#9679;") + '</span>' +
+          '<span class="pfi-n">' + esc(a[1]) + '</span>' +
+          (CRACHA[a[0]] ? '<b class="pfi-c">' + CRACHA[a[0]] + '</b>' : "") +
+          '</button>').join("") +
+        '</div>').join("") + '</nav>' +
+
+      /* --- e a caixa de ajuda do pé, que no desenho dela abre o chat --- */
+      '<div class="pf-ajuda cantinho" style="--cc2:var(--linha2)">' +
+        '<div class="pfa-t"><span>&#9673;</span> Precisa de ajuda?</div>' +
+        '<p>O chat do pedido é o mesmo da staff — abre ali e alguém responde.</p>' +
+        '<button class="pfa-bt" data-pfaba="suporte">Abrir chat</button>' +
+      '</div>' +
+    '</aside>';
+
+  /* ---- A COLUNA DA DIREITA. Tudo aqui sai de dado que já existe: a
+     atividade sai dos pedidos de verdade (EST.pedidos) e as notificações do
+     MESMO `AVISOS` que pinta o sino. Se eu escrevesse uma lista à parte, a
+     coluna e o sino iam divergir na primeira mudança. ---- */
+  /* ⚠ os campos do pedido são `n`, `st`, `itens` e `hora` — eu tinha escrito
+     `p.resumo` e `p.quando`, que não existem em lugar nenhum. Sairia
+     "undefined" na tela de quem comprou. */
+  const meusPedidos = (EST.pedidos || []).slice(0, 3);
+  const resumoPed = p => {
+    const i = (p.itens || [])[0];
+    const n = (p.itens || []).length;
+    if (!i) return "pedido aberto";
+    return i.jogo + " · " + i.rot + (n > 1 ? " e mais " + (n - 1) : "");
+  };
+  const colDir =
+    '<aside class="pf-dir">' +
+      '<div class="pfd-cx"><div class="pfd-t"><span>&#9673;</span> Atividade recente</div>' +
+        (meusPedidos.length
+          ? '<div class="pfd-lin">' + meusPedidos.map(p =>
+              '<div class="pfd-l"><span class="pfd-p ' +
+                (p.st === "pago" ? "ok" : "") + '"></span>' +
+              '<span class="pfd-c"><b>Pedido #' + esc(p.n) + '</b>' +
+              '<i>' + esc(resumoPed(p)) + '</i></span>' +
+              '<span class="pfd-q">' + esc(p.st === "pago" ? "pago" : "aguardando") +
+              '<br>' + esc(p.hora || "") + '</span></div>').join("") +
+            '</div>'
+          : '<div class="pfd-vazio">Você ainda não fez nenhum pedido por aqui. ' +
+            'Quando fizer, cada passo dele aparece nesta coluna.</div>') +
+      '</div>' +
+
+      '<div class="pfd-cx"><div class="pfd-t"><span>&#9737;</span> Últimas notificações' +
+        (esperando ? '<b class="pfd-n">' + esperando + '</b>' : "") + '</div>' +
+        '<div class="pfd-lin">' + AVISOS.slice(0, 3).map(a =>
+          '<div class="pfd-l"><span class="pfd-i" style="--vc:' + a.cor + '">' +
+          esc(a.ic) + '</span>' +
+          '<span class="pfd-c"><b>' + esc(a.tt) + '</b><i>' + esc(a.qd) + '</i></span>' +
+          (a.vez === "minha" ? '<span class="pfd-v">sua vez</span>' : "") +
+          '</div>').join("") + '</div>' +
+        '<button class="pfd-mais" data-pfaba="pedidos">Ver todas <i>&rarr;</i></button>' +
+      '</div>' +
+
+      /* o cartão de proteção do desenho. O texto não é slogan: é o que está
+         escrito em "O COMBINADO DA DAOSHI" no Marketplace, palavra por palavra
+         — o dinheiro fica retido e volta se o vendedor não entregar. */
+      '<div class="pfd-prot">' +
+        (D.mascote ? '<img src="' + D.mascote + '" alt="" aria-hidden="true">' : "") +
+        '<div><b>Proteção Daoshi</b>' +
+        '<p>O dinheiro fica com a Daoshi até você confirmar que recebeu. ' +
+        'Se o vendedor não entregar, volta para você.</p></div>' +
+      '</div>' +
+    '</aside>';
+
+  return '<div class="env larga"><div class="pf-grade">' +
+    menuLado +
+    '<div class="pf-meio">' +
+      '<div class="pf-cab"><h1>' + esc((MODOS_PERFIL.find(m => m[0] === pfModo) ||
+        MODOS_PERFIL[0])[1]) + '</h1>' +
+      '<p>Gerencie suas informações, pedidos e sua reputação na Daoshi Store.</p></div>' +
+      cab + sub +
+      /* `pf-corpo` é o que MUDA de aba para aba. Sem essa marca não dá para
+         perguntar "clicar no menu repintou a tela?": o cabeçalho (título,
+         subtítulo e os quatro cartões) é o mesmo nas seis abas do modo, e
+         qualquer comparação que o inclua responde "não mudou" sempre. */
+      '<div class="pf-corpo" style="padding-top:16px">' + corpo + '</div>' +
+    '</div>' +
+    colDir +
+  '</div></div>';
 }
 
 /* ------------------------- render ------------------------- */
