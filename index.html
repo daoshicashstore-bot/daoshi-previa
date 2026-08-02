@@ -1788,6 +1788,18 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .an-q b{color:var(--txt)}
 @media(max-width:700px){.an-f{grid-template-columns:1fr}}
 
+/* o prazo de reclamação, no topo do pedido — do manual da GGMax */
+.prazo-cx{display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:center;
+  border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 8%,var(--deep));
+  padding:12px 16px;margin:16px 0}
+.pz-i{font-size:17px;color:var(--gold);line-height:1}
+.pz-c{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pz-c b{font-size:13.5px;color:var(--txt);line-height:1.4}
+.pz-c i{font-style:normal;font-size:12px;color:var(--t3);line-height:1.5}
+.pz-n{font-family:var(--mono);font-size:21px;font-weight:700;color:var(--gold);
+  white-space:nowrap}
+@media(max-width:640px){.prazo-cx{grid-template-columns:24px 1fr}.pz-n{display:none}}
+
 /* o aviso de dia de reset — a resposta que ela mais dá em 4 anos, dita antes
    de perguntarem. Cor de informação, não de alerta: não é problema, é o jogo. */
 .reset-cx{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start;
@@ -7056,6 +7068,27 @@ function pedidoDoTicket(){
    anuncia no mercado, o cliente ou o fornecedor. As mensagens dizem "o cliente
    marcou o gold como online" — mas isso pode ser o cliente confirmando que o
    anúncio do fornecedor apareceu. Não vou inventar de novo. */
+/* QUANTO TEMPO A PESSOA TEM PARA RECLAMAR NESTE PEDIDO.
+   Sai das regras que ela já decidiu, por tipo — não é número inventado:
+     serviço, gamecoin e conta NFT → paga na confirmação
+     conta com Gmail/Steam        → 8 dias após o comprador confirmar que trocou
+   E na Store (que é ela quem vende) o prazo é o da conferência: 2 horas para
+   dizer que veio errado, e depois disso ainda existe suporte — só não existe
+   mais disputa sobre o ESTADO do que chegou. */
+function prazoDoPedido(fl){
+  if (fl.gid === "mir4gold" || /gold|moeda/i.test(fl.contaRot || ""))
+    return {texto: "2 horas depois da entrega", curto: "2 h",
+            porque: "No gold a conferência é rápida porque o valor aparece na hora. " +
+                    "Passou disso, o gold já entrou e não dá para saber o que foi gasto."};
+  if (fl.print)
+    return {texto: "2 horas depois de o pedido ser concluído", curto: "2 h",
+            porque: "É o tempo de entrar no jogo e conferir se chegou tudo. " +
+                    "Se o jogo estiver em manutenção, o prazo para e recomeça."};
+  return {texto: "2 horas depois da entrega", curto: "2 h",
+          porque: "Confira antes de usar. Depois de mexer, ninguém consegue saber " +
+                  "o que já estava faltando."};
+}
+
 function passosDoGold(){
   return [
     {t:"Pedido aberto",     q:"você",       b:"proceededToPayment"},
@@ -7391,6 +7424,21 @@ function telaTicket(){
       '<span class="es-t">' + esc(x.t) + '</span>' +
       '<span class="es-q">' + esc(x.q) + '</span></div>').join("") + '</div>' +
 
+    /* O PRAZO DE LIBERAÇÃO, NO TOPO DO PEDIDO.
+       Do manual da GGMax: "atente-se para abrir uma reclamação ANTES do prazo
+       em que o dinheiro será liberado ao vendedor — este está informado no
+       início do chat do pedido".
+       O detalhe que importa é ONDE: no início do chat, não no contrato. De que
+       adianta a regra existir se a pessoa descobre o prazo depois de vencido?
+       Aqui vale para os dois lados: o comprador vê quanto tempo tem para
+       reclamar, e o vendedor vê quando recebe. */
+    '<div class="prazo-cx">' +
+      '<span class="pz-i">&#9201;</span>' +
+      '<span class="pz-c"><b>Você tem até ' + esc(prazoDoPedido(fl).texto) +
+      ' para abrir uma reclamação neste pedido.</b>' +
+      '<i>' + esc(prazoDoPedido(fl).porque) + '</i></span>' +
+      '<span class="pz-n">' + esc(prazoDoPedido(fl).curto) + '</span>' +
+    '</div>' +
     avisoReset +
     vez +
     /* AS DUAS DÚVIDAS QUE EU NÃO VOU RESOLVER SOZINHO.
