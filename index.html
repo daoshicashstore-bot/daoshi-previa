@@ -696,9 +696,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .achou{text-align:center;font-size:13px;color:var(--t2);margin-top:12px}
 .achou b{color:var(--gold)}
 .achou .zerado{color:var(--magenta)}
-.sug{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:12px}
-.sug button{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-  border:1px solid var(--linha2);color:var(--t3);padding:5px 11px;transition:all .14s}
+/* estes eram os 8 alvos pequenos que a simulação de celular achou — GOLD,
+   PACOTES, WEMIX, PASSE... 28px de altura. Dedo não acerta 28px, e são
+   justamente os atalhos que mais gente usa para achar o que quer. */
+.sug{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.sug button{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid var(--linha2);color:var(--t2);padding:10px 14px;transition:all .14s}
 .sug button:hover{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,.07)}
 .sug button.on{border-color:var(--gold);color:var(--dark);background:var(--gold);font-weight:700}
 
@@ -754,8 +757,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    As cores azul/amarelo/roxo sao as da propria mascote da Daoshi
    (#5fa6cd, #fad765, #b72afb), extraidas do daoshi.com.br. */
 .vend{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0 3px}
-.vt{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;padding:3px 7px;line-height:1.35;
+/* subiu de 9,5 para 11,5 e ganhou altura: a simulação de celular achou 8 alvos
+   de toque com menos de 32px, e estas etiquetas (GOLD, PACOTES, WEMIX) eram a
+   maioria. Dedo não acerta 20px. */
+.vt{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:7px 10px;line-height:1.35;
   color:var(--vc,#ffd700);border:1px solid var(--vc,#ffd700);
   background:color-mix(in srgb, var(--vc,var(--gold)) 14%, var(--deep));
   box-shadow:inset 0 1px 0 color-mix(in srgb, var(--vc,#ffd700) 22%, transparent)}
@@ -923,9 +929,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   font-variant-numeric:tabular-nums;line-height:1.2}
 .item .pu{display:block;font-family:var(--mono);font-size:12px;color:var(--t3);
   letter-spacing:.04em;line-height:1.35}
-/* o cashback ganhou peso e cor cheia: é o "+ verdinho" que ele não enxergava */
-.item .cbk{display:block;font-family:var(--mono);font-size:12px;color:var(--verde);
-  font-weight:700;letter-spacing:.02em;line-height:1.4;margin-top:5px}
+/* O "+ VERDINHO", terceira tentativa.
+   Ele: "tá melhor do q antes mas o verdinho eu tive q forçar o olho ainda...
+   acho q o problema é q ele tá mt menor do q o resto".
+   O diagnóstico dele é melhor que o meu: eu vinha aumentando o número e o
+   problema é RELATIVO — ao lado de um preço de 21px, qualquer coisa de 12px
+   some. Então ele deixa de ser uma linha de texto solta e vira uma FAIXA, com
+   fundo verde e a largura do card. Aí ele não compete por tamanho: ele ocupa
+   um lugar que é só dele. */
+.item .cbk{display:block;font-family:var(--mono);font-size:13px;color:var(--verde);
+  font-weight:700;letter-spacing:.01em;line-height:1.3;margin-top:8px;
+  background:color-mix(in srgb,var(--verde) 15%,transparent);
+  border-top:1px solid color-mix(in srgb,var(--verde) 40%,transparent);
+  padding:6px 4px;width:calc(100% + 20px);margin-left:-10px;margin-bottom:-12px}
 
 .checkout{position:sticky;top:76px;border:1px solid var(--linha2);
   background:linear-gradient(180deg, var(--medium), var(--deep) 34%);
@@ -1132,12 +1148,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .cart-cx{border:1px solid var(--linha2);padding:16px;
   background:linear-gradient(180deg, var(--medium), var(--deep) 40%);
   box-shadow:inset 0 0 0 1px rgba(255,215,0,.07)}
-.cart-cx .cl{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.16em;
-  text-transform:uppercase;color:var(--t3)}
-.cv2{display:block;font-size:26px;font-weight:800;margin-top:5px;
+/* também aumentado: "aq no perfil, dnv tem coisa q ta mt pequena em comparação
+   c o resto, tive q forçar o olho dnv". O rótulo de 9px em cima de um número
+   de 26px era o mesmo erro do verdinho — pequeno DEMAIS em relação ao vizinho.
+   Rótulo 9->11,5 e a linha de baixo 11,5->13,5. */
+.cart-cx .cl{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--t2)}
+.cv2{display:block;font-size:27px;font-weight:800;margin-top:6px;
   font-variant-numeric:tabular-nums;color:var(--txt)}
 .cv2.am{color:var(--gold)} .cv2.vd{color:var(--verde)}
-.cart-cx .cs{display:block;font-size:11.5px;color:var(--t3);margin-top:3px}
+.cart-cx .cs{display:block;font-size:13.5px;color:var(--t2);margin-top:5px;line-height:1.45}
 table.ext{width:100%;border-collapse:collapse}
 table.ext th{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--t3);text-align:left;padding:9px 15px;font-weight:400;border-bottom:1px solid var(--linha2)}
@@ -1551,6 +1571,79 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .sw input:checked + span::before{transform:translateX(18px);background:var(--verde)}
 .trava{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--t3);text-align:center;padding:6px 0}
+
+/* a janela de conferência de 2 horas, na hora em que ela vale */
+.conf2h{display:grid;grid-template-columns:24px 1fr;gap:11px;align-items:start;
+  border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 8%,transparent);
+  padding:12px 14px;margin:12px 0;font-size:13.5px;color:var(--t2);line-height:1.6}
+.conf2h b{color:var(--txt)}
+.c2-ic{font-size:17px;line-height:1.2;color:var(--gold)}
+
+/* o painel de disputa da staff */
+.dp-crit{border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 8%,var(--deep));
+  padding:14px 16px;margin-top:14px}
+.dp-ct{font-family:var(--mono);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:7px}
+.dp-crit b{display:block;font-size:19px;margin-bottom:6px}
+.dp-crit p{font-size:13.5px;color:var(--t2);line-height:1.6}
+.dp-num{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:1px;
+  background:var(--linha2);border:1px solid var(--linha2);margin-top:14px}
+.dp-num > div{background:var(--deep);padding:13px 15px}
+.dp-num i{display:block;font-style:normal;font-family:var(--mono);font-size:9px;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--t3);margin-bottom:5px}
+.dp-num b{display:block;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.dp-num b.vd{color:var(--verde)}
+.dp-num small{display:block;font-size:11.5px;color:var(--t3);margin-top:4px;line-height:1.4}
+.dp-ac{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.dp-ac .btn-mmo{flex:1;min-width:180px}
+
+/* o formulário de anunciar */
+.an-f{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.an-f label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--t2)}
+.an-f label.cheio{grid-column:1/-1}
+.an-f input,.an-f select,.an-f textarea{background:var(--dark);border:1px solid var(--linha2);
+  color:var(--txt);font-family:inherit;font-size:15px;padding:11px 12px;outline:none;
+  border-radius:0}
+.an-f input:focus,.an-f select:focus,.an-f textarea:focus{border-color:var(--gold)}
+.an-f textarea{resize:vertical;line-height:1.55}
+.an-drop{border:1px dashed var(--linha2);padding:20px 16px;text-align:center;
+  font-size:13.5px;color:var(--t3);line-height:1.6;cursor:pointer;transition:border-color .16s}
+.an-drop:hover{border-color:var(--gold)}
+.an-drop b{color:var(--gold)}
+.an-drop span{display:block;font-size:12px;color:var(--t3);margin-top:5px}
+.an-recebo{border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 7%,var(--deep));
+  padding:13px 15px;margin-top:14px}
+.an-vz{font-size:13.5px;color:var(--t3)}
+.an-q{font-size:12.5px;color:var(--t2);line-height:1.6;margin-top:9px;
+  padding-top:9px;border-top:1px solid var(--linha)}
+.an-q b{color:var(--txt)}
+@media(max-width:700px){.an-f{grid-template-columns:1fr}}
+
+/* o aviso de dia de reset — a resposta que ela mais dá em 4 anos, dita antes
+   de perguntarem. Cor de informação, não de alerta: não é problema, é o jogo. */
+.reset-cx{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start;
+  border:1px solid var(--info);border-left:3px solid var(--info);
+  background:color-mix(in srgb,var(--info) 9%,var(--deep));
+  padding:13px 15px;margin:14px 0;font-size:13.5px;color:var(--t2);line-height:1.6}
+.reset-cx b{color:var(--txt)}
+.rs-ic{font-size:17px;line-height:1.2}
+
+/* o campo de cupom no carrinho */
+.cupom-cx{margin:12px 0;padding-top:12px;border-top:1px solid var(--linha)}
+.cupom-cx label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--t3);margin-bottom:7px}
+.cupom-l{display:flex;gap:0}
+.cupom-l input{flex:1;min-width:0;background:var(--dark);border:1px solid var(--linha2);
+  border-right:0;color:var(--txt);font-family:var(--mono);font-size:13px;
+  letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;outline:none}
+.cupom-l input:focus{border-color:var(--gold)}
+.cupom-l button{flex:none;background:var(--gold);color:var(--dark);font-family:var(--mono);
+  font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:10px 15px;font-weight:700}
+.cupom-fb{font-size:12px;color:var(--t3);line-height:1.55;margin-top:8px}
+.cupom-fb b{color:var(--verde)}
+.cupom-sug{font-family:var(--mono);font-size:11px;color:var(--gold);
+  border:1px solid var(--gold);padding:1px 6px;letter-spacing:.06em}
+.cupom-sug:hover{background:var(--gold);color:var(--dark)}
 
 /* ============ OS TERMOS ============
    O RESUMIDO é uma tela, não um link no rodapé — ela pediu "na cara da pessoa".
@@ -2770,10 +2863,19 @@ const ABAS = {
    A separação não é estética: ela responde a UMA pergunta que a pessoa faz o
    tempo todo num marketplace — "isso que estou vendo, quem mais vê?". Por isso
    cada modo diz em cima quem enxerga aquilo. */
+/* AS TRÊS CORES VIRARAM UMA SÓ.
+   O amigo de fora: "aqui é legal o ngc ficar roxo qnd clica, só q os outros...
+   aqui podia ser só roxo dnv" e, sobre o vermelho do perfil público, "super
+   dramático sem necessidade, podia ser só roxo dnv".
+   Ele tem razão. Eu estava usando cor para dizer QUEM VÊ (roxo=só você,
+   dourado=os dois, magenta=todo mundo) — mas magenta perto de vermelho lê como
+   PERIGO, e perfil público não é perigo, é informação. Quem carrega esse
+   sentido é a linha de texto embaixo de cada aba, que já existe e diz com
+   palavras. Cor aqui só precisa dizer "esta é a aba aberta". */
 const MODOS_PERFIL = [
   ["privado", "Meu perfil — privado", "só você vê", "var(--vibrant)"],
-  ["chats",   "Meus chats",           "você e quem está do outro lado", "var(--gold)"],
-  ["publico", "Meu perfil — público", "qualquer um vê", "var(--magenta)"],
+  ["chats",   "Meus chats",           "você e quem está do outro lado", "var(--vibrant)"],
+  ["publico", "Meu perfil — público", "qualquer um vê", "var(--vibrant)"],
 ];
 const ABAS_MODO = {
   privado: [["pedidos","Meus pedidos"],["carteira","Carteira e saque"],
@@ -2807,6 +2909,7 @@ let mpJogo = null;                       // marketplace: jogo escolhido no fóru
 /* OS TERMOS. `termoNa` guarda para onde ir DEPOIS de aceitar ("comprar" ou
    "anunciar"), porque o resumido é uma porta que a pessoa atravessa, não um
    destino. `aceites` é um por item, não um só — ela pediu item por item. */
+let cupomUsado = "";                     // cupom digitado no carrinho
 let orgEscolha = 0;                      // organização: para onde vai o cashback
 let termoNa = null;                      // null | "comprar" | "anunciar" | "ler"
 let aceites = [false, false, false, false, false];
@@ -5833,7 +5936,80 @@ function telaAnunciar(){
         'LER OS CINCO PONTOS E ANUNCIAR</button>') +
     '<button class="btn-mmo vazio" style="--bc:var(--light);width:100%;margin-top:8px" ' +
     'data-doc="termos">ler o texto completo dos termos</button>' +
+    '</div></div>' +
+
+    /* O FORMULÁRIO.
+       A simulação do Diego achou o único BLOQUEIA do site: a tela explicava
+       tudo sobre anunciar e não tinha um campo sequer. Explicar como vender e
+       não deixar vender é o pior tipo de tela — a pessoa lê, se convence, e aí
+       descobre que não dá.
+       O campo de RECEBO é o mais importante: ela disse que a pergunta do
+       vendedor é sempre "quanto eu recebo no fim?". Ele calcula ao vivo. */
+    '<div class="painel" style="margin-top:14px"><span class="cant2 tr"></span>' +
+    '<span class="cant2 bl"></span>' +
+    '<div class="placa"><span class="pt2">o anúncio</span><span class="orn"></span>' +
+    '<span class="dir2">expira em ' + R.validadeAnuncio + ' dias</span></div>' +
+    '<div style="padding:16px">' +
+      '<div class="an-f">' +
+        '<label>O que você está vendendo' +
+          '<select id="anTipo">' +
+            '<option value="contas">Conta de jogo</option>' +
+            '<option value="reroll">Conta reroll</option>' +
+            '<option value="servicos">Serviço (elo, farm, boss)</option>' +
+          '</select></label>' +
+        '<label>Jogo' +
+          '<select id="anJogo">' + D.jogos.slice(0, 12).map(j =>
+            '<option>' + esc(j.nome) + '</option>').join("") + '</select></label>' +
+        '<label class="cheio">Título do anúncio' +
+          '<input id="anTit" type="text" maxlength="70" ' +
+          'placeholder="MIR4 — PP 180k, servidor SP, com e-mail original"></label>' +
+        '<label>Preço<input id="anPreco" type="number" min="1" step="0.01" ' +
+          'placeholder="0,00"></label>' +
+        '<label>Você tem o e-mail de criação?' +
+          '<select id="anMail"><option>Sim, o original</option>' +
+          '<option>Não tenho</option><option>Não se aplica</option></select></label>' +
+        '<label class="cheio">O que tem dentro' +
+          '<textarea id="anDesc" rows="4" placeholder="Classe, poder, skins, itens, ' +
+          'o que já foi feito. Quanto mais específico, mais rápido vende."></textarea></label>' +
+        '<label class="cheio">Prints (o comprador vê antes de pagar)' +
+          '<div class="an-drop">arraste as imagens aqui ou <b>escolha do aparelho</b>' +
+          '<span>tire os seus dados pessoais das fotos antes de mandar</span></div></label>' +
+      '</div>' +
+
+      '<div class="an-recebo" id="anRecebo"></div>' +
+      '<div class="seguro">Anúncio sem print vende bem menos, e é o primeiro pedido ' +
+      'de quem comenta. <b>Prints ficam guardados</b> e valem como prova se der disputa.</div>' +
+      '<button class="btn-mmo" style="--bc:var(--verde);width:100%;margin-top:10px" ' +
+      'id="btPublicar">PUBLICAR ANÚNCIO</button>' +
     '</div></div></div>';
+}
+/* quanto o vendedor recebe, ao vivo. É a pergunta dele, e o site tem que
+   responder ANTES de publicar, não depois de vender. */
+function ligaAnunciar(){
+  const px = document.getElementById("anPreco");
+  if (!px) return;
+  const tipo = document.getElementById("anTipo");
+  const alvo = document.getElementById("anRecebo");
+  const conta = () => {
+    const v = parseFloat(String(px.value).replace(",", ".")) || 0;
+    const at = patenteAtual();
+    const taxa = v * at.taxa / 100;
+    const k = tipo.value;
+    const reg = D.contratoPorRisco[k] || [false, ""];
+    const ret = (k === "servicos")
+      ? "assim que o comprador confirmar"
+      : "8 dias após o comprador confirmar que trocou tudo";
+    alvo.innerHTML = v <= 0
+      ? '<span class="an-vz">Escreva o preço para ver quanto você recebe.</span>'
+      : '<div class="lin"><span>Preço do anúncio</span><b>' + brl(v) + '</b></div>' +
+        '<div class="lin"><span>Taxa da casa (' + esc(at.t) + ' &middot; ' +
+          String(at.taxa).replace(".", ",") + '%)</span><b>− ' + brl(taxa) + '</b></div>' +
+        '<div class="tot"><span>Você recebe</span><b>' + brl(v - taxa) + '</b></div>' +
+        '<div class="an-q"><b>Quando:</b> ' + ret + '.<br>' +
+        '<b>Contrato entre as partes:</b> ' + (reg[0] ? "sim" : "não precisa") +
+        ' — ' + esc(reg[1]) + '</div>';
+  };
+  px.oninput = conta; tipo.onchange = conta; conta();
 }
 /* ================= CARRINHO E CHECKOUT =================
    O que acontece depois de escolher o pack. Um carrinho só para vários jogos,
@@ -5893,6 +6069,23 @@ function telaCarrinho(){
       '<b>+ ' + brl(cb) + '</b></div>' +
       '<div class="lin"><span>Usar saldo (' + brl(D.cashback.saldo) + ')</span>' +
       '<b><label class="sw"><input type="checkbox" id="usaSaldo"><span></span></label></b></div>' +
+      /* O CAMPO DE CUPOM.
+         Achado pela simulação da Carla: o FAQ do próprio site diz "no carrinho
+         tem o campo de cupom" — e o campo NÃO EXISTIA. Prometer o que não tem é
+         pior que não ter: a pessoa procura, não acha, e abre ticket.
+         Cupom é o 3º assunto mais comum nos 22.935 tickets. E o CLIENTE já vem
+         sugerido, que é a resposta padrão dela para quem não tem cupom. */
+      '<div class="cupom-cx">' +
+        '<label for="cxCupom">Cupom de desconto</label>' +
+        '<div class="cupom-l"><input id="cxCupom" type="text" autocomplete="off" ' +
+        'placeholder="código do streamer" value="' + esc(cupomUsado) + '">' +
+        '<button id="btCupom">aplicar</button></div>' +
+        '<div class="cupom-fb" id="cupomFb">' + (cupomUsado
+          ? '&#10003; <b>' + esc(cupomUsado) + '</b> aplicado &middot; cashback em dobro'
+          : 'Veio de um streamer? Use o código dele — assim ele recebe. ' +
+            'Não tem nenhum? <button class="cupom-sug" data-cupom="CLIENTE">CLIENTE</button> ' +
+            'serve para todo mundo.') + '</div>' +
+      '</div>' +
       '<div class="tot"><span>Total</span><b id="totCar">' + emReal(tot) +
       '<span class="em">' + usd(tot) + '</span></b></div>' +
       '<div class="trava" id="travaPreco"></div>' +
@@ -6068,6 +6261,28 @@ function telaTicket(){
   const tot = linhas.reduce((a,x) => a + x.usd * x.q, 0) * D.usd;
   const fim = p.t === "Fechado";
 
+  /* O AVISO DE DIA DE RESET.
+     Ela disse, e eu demorei a pôr: "dia de reset do jogo aumenta o prazo — ela
+     responde isso o tempo todo e o site não diz em lugar nenhum". Somado a
+     "68% de todos os tickets são 'em que pé está meu pedido?'", este aviso é o
+     que mais tem chance de derrubar ticket no site inteiro: ele responde a
+     pergunta ANTES de ela ser feita.
+     No site real, `resetHoje` vem do calendário de manutenção de cada jogo.
+     Aqui é uma maquete e por isso ele aparece sempre que o pedido está
+     esperando o fornecedor. */
+  /* os nomes dos passos vêm de `passosDoTicket`; eu tinha inventado outros e o
+     aviso nunca aparecia. Vale enquanto o pedido depende do fornecedor. */
+  const esperando = ["Pagamento", "Na fila", "Pede os dados", "Pode logar",
+                     "Código 2 fatores"].indexOf(p.t) >= 0;
+  const avisoReset = esperando
+    ? '<div class="reset-cx"><span class="rs-ic">&#9203;</span><span>' +
+      '<b>Hoje é dia de reset no ' + esc(g.nome) + '.</b> ' +
+      'Depois da manutenção o fornecedor pega fila, e o prazo de <b>' +
+      esc(m.prazo) + '</b> pode dobrar. <b>Não é problema no seu pedido</b> — é o ' +
+      'jogo. Assim que a fila andar, ele segue sozinho e você é avisado aqui.' +
+      '</span></div>'
+    : "";
+
   /* o que a pessoa (ou o outro lado) tem que fazer AGORA */
   let vez = "";
   if (p.t === "Print enviado")
@@ -6118,11 +6333,26 @@ function telaTicket(){
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--gold)">' +
       'ENVIAR O CÓDIGO</button></div></div>';
   else if (p.t === "Pode logar")
-    vez = '<div class="vez-cx deles"><div class="vez-t">&#9679; entregue</div>' +
+    /* A JANELA DE 2 HORAS, dita ONDE ela é usada.
+       A simulação de intermediação achou isto: a regra das 2 horas estava nos
+       termos e em lugar nenhum da tela. Regra de procedimento que a pessoa só
+       lê no contrato não protege ninguém — ela tem que aparecer no minuto em
+       que vale, que é este. */
+    vez = '<div class="vez-cx deles"><div class="vez-t">&#9679; entregue &middot; ' +
+      'você tem 2 horas</div>' +
       '<h4>O fornecedor avisou que pode logar</h4>' +
       '<p>Entre no jogo e confira se chegou tudo. Só confirme depois de ver com os próprios olhos.</p>' +
-      '<div class="vez-ac"><button class="btn-mmo vazio" data-tkav="1" style="--bc:var(--light)">' +
-      'já conferi</button></div></div>';
+      '<div class="conf2h"><span class="c2-ic">&#9201;</span><span>' +
+      '<b>A partir de agora você tem 2 horas para conferir e responder.</b> ' +
+      'Tire print do que recebeu — inventário, saldo, itens. ' +
+      'Quem não confere no prazo <b>perde o direito de abrir disputa depois</b> sobre o ' +
+      'estado do que recebeu, e essa regra vale igual para os dois lados. ' +
+      'Se o jogo estiver em manutenção e você não conseguir entrar, o prazo para e ' +
+      'recomeça quando o servidor voltar.</span></div>' +
+      '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--verde)">' +
+      'CONFERI, ESTÁ TUDO CERTO</button>' +
+      '<button class="btn-mmo vazio" style="--bc:var(--magenta)">tem problema</button>' +
+      '</div></div>';
   else if (p.t === "Confirmação")
     vez = '<div class="vez-cx"><div class="vez-t">&#9679; é a sua vez</div>' +
       '<h4>Recebeu tudo certo?</h4>' +
@@ -6167,6 +6397,7 @@ function telaTicket(){
       '<span class="es-t">' + esc(x.t) + '</span>' +
       '<span class="es-q">' + esc(x.q) + '</span></div>').join("") + '</div>' +
 
+    avisoReset +
     vez +
 
     '<div class="chat"><div class="ch-cab"><b>Conversa do pedido</b>' +
@@ -7090,10 +7321,39 @@ function telaStaff(){
         '<p>“Entreguei tudo certo, ele confirmou no dia. Não tenho como saber o que ele fez depois.”</p>' +
         '<div class="dp-pv">prova: confirmação de recebimento no dia 02/08</div></div>' +
       '</div>' +
-      '<div class="dp-obs"><b>Esta é a pergunta que ficou sem resposta na mesa redonda:</b> ' +
-      'o que a Daoshi faz quando as duas partes têm prova. O contrato com os dados dos dois ' +
-      'existe justamente para este caso — mas quem decide se devolve, divide ou nega ainda ' +
-      'precisa ser escrito antes de acontecer de verdade.</div>' +
+      /* Isto aqui dizia "a pergunta que ficou sem resposta". Ela RESPONDEU em
+         02/08: o critério é "a conta está com quem?" — objetivo e verificável,
+         não depende de acreditar em um dos dois. O painel tem que refletir a
+         decisão dela, senão a staff continua decidindo no achismo. */
+      '<div class="dp-crit"><div class="dp-ct">o critério da casa</div>' +
+        '<b>A conta está com quem?</b>' +
+        '<p>Quem estiver com o acesso <b>no momento da análise</b> responde pela ' +
+        'devolução. É verificável — não depende de acreditar em um dos dois, e vale ' +
+        'igual para comprador e vendedor.</p></div>' +
+
+      /* o que a simulação de intermediação achou faltando: quanto está retido
+         (é o que decide se dá para resolver sem tirar do bolso dela) e o botão
+         de banir */
+      '<div class="dp-num">' +
+        '<div><i>valor do negócio</i><b>' + brl(1240.00) + '</b></div>' +
+        '<div><i>ainda retido com a Daoshi</i><b class="vd">' + brl(1240.00) + '</b>' +
+          '<small>dá para devolver sem tirar do caixa</small></div>' +
+        '<div><i>dia da entrega</i><b>02/08</b><small>disputa aberta em 05/08 · ' +
+          'dentro do prazo</small></div>' +
+        '<div><i>prazo de MED do Pix</i><b>77 dias</b>' +
+          '<small>guardar a prova até lá</small></div>' +
+      '</div>' +
+
+      '<div class="dp-ac">' +
+        '<button class="btn-mmo" style="--bc:var(--verde)">devolver ao comprador</button>' +
+        '<button class="btn-mmo vazio" style="--bc:var(--gold)">liberar ao vendedor</button>' +
+        '<button class="btn-mmo vazio" style="--bc:var(--magenta)">' +
+        'devolver e BANIR o vendedor</button>' +
+        '<button class="btn-mmo vazio" style="--bc:var(--light)">pedir mais prova</button>' +
+      '</div>' +
+      '<div class="seguro">Banir entrega ao comprador os dados do vendedor — nome, CPF e ' +
+      'chave Pix — para ele levar adiante. O saldo dele fica retido enquanto houver ' +
+      'disputa aberta ou prazo de MED correndo. <b>Banimento não é confisco.</b></div>' +
       '</div></div>';
 
   return '<div class="env">' +
@@ -8388,6 +8648,16 @@ function render(){
     });
   const bPag = document.getElementById("btPagar");
   if (bPag) bPag.onclick = () => { aba = "pagar"; render(); window.scrollTo(0,0); };
+  /* cupom: aplicar pelo botão, pelo Enter, ou clicando no CLIENTE sugerido */
+  const cxC = document.getElementById("cxCupom");
+  if (cxC){
+    const aplica = () => { cupomUsado = cxC.value.trim().toUpperCase();
+                           render(); window.scrollTo(0, window.scrollY); };
+    document.getElementById("btCupom").onclick = aplica;
+    cxC.onkeydown = e => { if (e.key === "Enter"){ e.preventDefault(); aplica(); } };
+    document.querySelectorAll("[data-cupom]").forEach(b =>
+      b.onclick = () => { cupomUsado = b.dataset.cupom; render(); });
+  }
   const sal = document.getElementById("usaSaldo");
   if (sal) sal.onchange = () => {
     const t = totalCarrinho() * D.usd;
@@ -8456,6 +8726,7 @@ function render(){
     b.onclick = () => { orgEscolha = +b.dataset.orgop;
                         const y = window.scrollY; render(); window.scrollTo(0, y); });
   ligaCripto();
+  ligaAnunciar();
   ligaEncomenda();
   ligaVender();
   ligaRelogio();
