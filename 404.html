@@ -859,6 +859,31 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .explica b{color:var(--txt)}
 
 .campos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* a tela do Pix */
+.pix-cx{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;
+  border:1px solid var(--linha2);background:var(--deep);padding:24px}
+.pix-qr{width:196px;height:196px;background:#fff;padding:12px;display:grid;
+  place-items:center;position:relative}
+.pix-qr svg{width:100%;height:100%;fill:#000}
+.pix-ok{font-size:34px;color:var(--verde)}
+.pix-av{position:absolute;left:0;right:0;bottom:-20px;text-align:center;
+  font-family:var(--mono);font-size:11px;color:var(--t3);letter-spacing:.08em}
+.pix-lado{min-width:0}
+@media(max-width:640px){.pix-cx{grid-template-columns:1fr}
+  .pix-qr{width:100%;max-width:240px;height:auto;aspect-ratio:1/1;margin:0 auto 24px}}
+
+/* o campo de verdade: guarda o que a pessoa digita e marca quando está pronto */
+.cmp{display:flex;flex-direction:column;gap:4px}
+.cmp-r{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:4px}
+.cmp-r i{font-style:normal;color:var(--verde)}
+.cmp.ok .cmp-r{color:var(--verde)}
+.cmp input,.cmp select,.cmp textarea{background:var(--dark);border:1px solid var(--linha2);
+  color:var(--txt);font-family:inherit;font-size:15px;padding:12px;outline:none;
+  width:100%;border-radius:0}
+.cmp.ok input,.cmp.ok select,.cmp.ok textarea{border-color:var(--verde)}
+.cmp input:focus,.cmp select:focus,.cmp textarea:focus{border-color:var(--gold)}
+.cmp textarea{resize:vertical;line-height:1.55}
+
 .campo-e{border:1px solid var(--linha2);background:var(--dark);padding:12px 12px;
   display:flex;justify-content:space-between;gap:8px;color:var(--t3);font-size:13.5px}
 .campo-e b{color:var(--t2);font-weight:600}
@@ -2915,6 +2940,121 @@ let mpJogo = null;                       // marketplace: jogo escolhido no fóru
 /* OS TERMOS. `termoNa` guarda para onde ir DEPOIS de aceitar ("comprar" ou
    "anunciar"), porque o resumido é uma porta que a pessoa atravessa, não um
    destino. `aceites` é um por item, não um só — ela pediu item por item. */
+/* =====================================================================
+   O MOTOR LOCAL — o que faz o site DEIXAR A PESSOA FAZER, e não só olhar
+
+   O amigo da Daoshi pediu: "me faça fazer algo que vc deseja no site e eu vejo
+   se consigo, se tá bom". E ela não soube o que pedir — porque não dava para
+   pedir nada:
+
+     "A compra, não continua. O perfil, não é editável. Os campos, não são
+      digitáveis. A gente tá só na teoria e visual — não tem como prosseguir ou
+      simular nada."
+
+   Ela está certa, e o motivo é bobo: os campos da página do jogo nem eram
+   campos — eram <span> com texto de exemplo. Nada guardava nada, e todo
+   render() apagava o que a pessoa tinha digitado.
+
+   Isto aqui resolve sem servidor nenhum: um ESTADO que vive no navegador,
+   sobrevive ao render() e sobrevive a recarregar a página. Não é backend de
+   mentira — é uma maquete que FUNCIONA, e serve para três coisas:
+
+     1. dar tarefa de verdade para alguém testar ("compre 1.000 de gold");
+     2. achar problema de uso que clique-a-clique nunca acha;
+     3. virar a especificação do backend, porque o que ele tem que guardar é
+        exatamente o que está aqui.
+
+   REGRA: nada de dado real de cliente aqui dentro. É maquete.
+   ===================================================================== */
+const EST_PADRAO = {
+  perfil: {nome: "", desc: "", foto: "", mostra: {}},
+  campos: {},          /* tudo que a pessoa digita, por chave */
+  pedidos: [],         /* pedidos que ela criou de verdade */
+  anuncios: [],        /* anúncios que ela publicou */
+  saldo: null,         /* null = usa o do protótipo */
+  saques: [],
+  visto: {},           /* o que ela já leu/aceitou */
+};
+let EST = JSON.parse(JSON.stringify(EST_PADRAO));
+try {
+  const g = localStorage.getItem("daoshi-est");
+  if (g) EST = Object.assign(JSON.parse(JSON.stringify(EST_PADRAO)), JSON.parse(g));
+} catch(e){}
+function salvar(){
+  try { localStorage.setItem("daoshi-est", JSON.stringify(EST)); } catch(e){}
+}
+function zerarTudo(){
+  EST = JSON.parse(JSON.stringify(EST_PADRAO));
+  carrinho.length = 0; cupomUsado = "";
+  try { localStorage.removeItem("daoshi-est"); } catch(e){}
+}
+/* o valor de um campo, com o que a pessoa digitou vencendo o padrão */
+/* hora de agora, para carimbar pedido. `new Date()` é o único jeito honesto de
+   a maquete dizer "isto aconteceu agora". */
+function relogio(){
+  const d = new Date();
+  return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+}
+function campo(chave, padrao){
+  return (EST.campos[chave] !== undefined && EST.campos[chave] !== null)
+    ? EST.campos[chave] : (padrao || "");
+}
+function poeCampo(chave, valor){ EST.campos[chave] = valor; salvar(); }
+
+/* desenha um campo DE VERDADE, que guarda o que foi digitado.
+   `tipo` pode ser texto, senha, numero, area ou uma lista para virar select. */
+function campoReal(chave, rot, dica, tipo, opcoes){
+  const v = campo(chave, "");
+  const id = "cp_" + chave.replace(/\W/g, "_");
+  let dentro;
+  if (opcoes && opcoes.length)
+    dentro = '<select id="' + id + '" data-campo="' + esc(chave) + '">' +
+      '<option value="">selecione</option>' +
+      opcoes.map(o => '<option' + (o === v ? " selected" : "") + '>' +
+        esc(o) + '</option>').join("") + '</select>';
+  else if (tipo === "area")
+    dentro = '<textarea id="' + id + '" rows="3" data-campo="' + esc(chave) + '" ' +
+      'placeholder="' + esc(dica || "") + '">' + esc(v) + '</textarea>';
+  else
+    dentro = '<input id="' + id + '" data-campo="' + esc(chave) + '" ' +
+      'type="' + (tipo === "senha" ? "password" : tipo === "numero" ? "number" : "text") +
+      '" value="' + esc(v) + '" placeholder="' + esc(dica || "") + '" autocomplete="off">';
+  return '<label class="cmp' + (v ? " ok" : "") + '" for="' + id + '">' +
+    '<span class="cmp-r">' + esc(rot) + (v ? ' <i>&#10003;</i>' : "") + '</span>' +
+    dentro + '</label>';
+}
+/* liga TODOS os campos da tela de uma vez. Sem isto, cada render() apagava o
+   que a pessoa tinha acabado de escrever — que é o que fazia o site parecer
+   "não digitável". */
+function ligaCampos(){
+  document.querySelectorAll("[data-campo]").forEach(el => {
+    el.oninput = () => { EST.campos[el.dataset.campo] = el.value; salvar(); };
+    el.onchange = () => { EST.campos[el.dataset.campo] = el.value; salvar();
+                          if (el.tagName === "SELECT") repinta(); };
+  });
+}
+/* Redesenha SEM perder onde a pessoa estava nem o cursor do campo.
+   Isto é o coração de "os campos são digitáveis": o render() reconstrói o HTML
+   inteiro, então sem devolver o foco e a posição do cursor a pessoa digita uma
+   letra e o teclado "pula fora" do campo. */
+function repinta(){
+  const ativo = document.activeElement;
+  const chave = (ativo && ativo.dataset) ? ativo.dataset.campo : null;
+  let pos = 0;
+  try { pos = ativo.selectionStart || 0; } catch(e){}
+  const y = window.scrollY;
+  render();
+  window.scrollTo(0, y);
+  if (chave){
+    const volta = document.querySelector('[data-campo="' + chave + '"]');
+    if (volta){
+      volta.focus();
+      try { volta.setSelectionRange(pos, pos); } catch(e){}
+    }
+  }
+}
+
+let pixAberto = null;                    // número do pedido na tela do Pix
 let cupomUsado = "";                     // cupom digitado no carrinho
 let orgEscolha = 0;                      // organização: para onde vai o cashback
 let termoNa = null;                      // null | "comprar" | "anunciar" | "ler"
@@ -3788,14 +3928,27 @@ function telaGames(){
 
       passo(2, porUid ? "Informe o seu UID" : "Informe o login do jogo",
         fl.campos.length + (fl.campos.length === 1 ? " campo" : " campos"),
-        /* os campos SAO os do proprio bot: credentialsSchema do gameRegistry */
+        /* CAMPOS DE VERDADE. Eram <span> com texto de exemplo — dava para ler
+           e não dava para escrever, e foi o que fez o amigo dela não conseguir
+           fazer tarefa nenhuma. Os rótulos continuam vindo do credentialsSchema
+           do gameRegistry dela; o que mudou é que agora guardam o que a pessoa
+           digita, e sobrevivem ao render(). */
         '<div class="campos">' + (fl.campos.length
-          ? fl.campos.map(cc => '<div class="campo-e"><b>' + esc(cc) + '</b><span>' +
-              (/senha|password/i.test(cc) ? "••••••••" :
-               /uid/i.test(cc) ? "seu número no jogo" :
-               /servidor|server/i.test(cc) ? "selecione" :
-               /nick/i.test(cc) ? "como você aparece no jogo" : "preencher") +
-              '</span></div>').join("")
+          ? fl.campos.map(cc => {
+              const ch = "jogo:" + g.ch + ":" + m.gid + ":" + cc;
+              const b = cc.toLowerCase();
+              if (/servidor|server/.test(b))
+                return campoReal(ch, cc, "", "texto",
+                  ["Servidor 1", "Servidor 2", "Servidor 3", "SP", "NA", "EU", "SA"]);
+              if (/m[ée]todo de login|login method/.test(b))
+                return campoReal(ch, cc, "", "texto",
+                  ["E-mail e senha", "Google", "Facebook", "Apple", "Steam"]);
+              return campoReal(ch, cc,
+                /senha|password/.test(b) ? "a senha da conta do jogo" :
+                /uid/.test(b) ? "seu número no jogo" :
+                /nick/.test(b) ? "como você aparece no jogo" :
+                /mail|login/.test(b) ? "o e-mail ou login da conta" : "preencher",
+                /senha|password/.test(b) ? "senha" : "texto"); }).join("")
           : '<div class="campo-e"><b>Nada a preencher</b><span>entrega por código</span></div>') +
         '</div>' +
         (fl.duasEtapas
@@ -6174,10 +6327,69 @@ function telaPagar(){
       '<div class="lin cbl"><span>Volta em cashback</span><b>+ ' + brl(cb) + '</b></div>' +
       '<div class="tot"><span>Total</span><b>' + brl(tot) +
       '<span class="em">no Pix</span></b></div>' +
-      '<button class="comprar-ja btn-mmo" style="--bc:var(--verde)">GERAR PIX</button>' +
+      /* ANTES este botão não fazia nada — era o fim da linha do protótipo.
+         Agora ele cria um pedido de verdade em EST.pedidos, esvazia o carrinho
+         e leva para o pedido, que é o que a pessoa espera. */
+      '<button class="comprar-ja btn-mmo" style="--bc:var(--verde)" id="btGerarPix">' +
+      'GERAR PIX &middot; ' + brl(tot) + '</button>' +
       '<div class="seguro">Depois do Pix confirmar, o recibo e a nota fiscal aparecem ' +
       'em <b>Meus pedidos</b>, automaticamente.</div>' +
     '</div></div></div></div>';
+}
+
+/* A TELA DO PIX — o passo que faltava entre "quero comprar" e "tenho pedido".
+   Sem ela a compra morria no meio, e era a primeira coisa que o amigo dela
+   tentaria fazer. O código é falso e está escrito na tela que é falso. */
+function telaPix(){
+  const p = EST.pedidos.find(x => x.n === pixAberto);
+  if (!p){ pixAberto = null; return telaCarrinho(); }
+  const pago = p.st !== "aguardando";
+  return '<div class="env"><div class="tm">' +
+    '<div class="tm-cab"><h1>' + (pago ? "Pagamento confirmado" : "Pague com Pix") + '</h1>' +
+    '<p>' + (pago
+      ? "O pedido <b>#" + esc(p.n) + "</b> está andando. Você acompanha tudo por ele."
+      : "Abra o app do banco, escolha Pix e leia o código. O pedido abre sozinho quando o pagamento cair.") +
+    '</p></div>' +
+    '<div class="pix-cx">' +
+      '<div class="pix-qr">' + (pago ? '<span class="pix-ok">&#10003;</span>' : qrFalso(p.n)) + '</div>' +
+      '<div class="pix-lado">' +
+        '<div class="lin"><span>Pedido</span><b>#' + esc(p.n) + '</b></div>' +
+        '<div class="lin"><span>Itens</span><b>' + p.itens.length + '</b></div>' +
+        '<div class="lin cbl"><span>Volta em cashback</span><b>+ ' + brl(p.cb) + '</b></div>' +
+        '<div class="tot"><span>Total</span><b>' + brl(p.total) + '</b></div>' +
+        (pago
+          ? '<div class="seguro" style="color:var(--verde)">&#10003; Pago em ' +
+            esc(p.hora) + '. O dinheiro fica com a Daoshi até você confirmar que recebeu.</div>'
+          : '<button class="btn-mmo" style="--bc:var(--verde);width:100%;margin-top:12px" ' +
+            'id="btPixPago">SIMULAR O PIX CAINDO</button>' +
+            '<div class="seguro">Esta maquete não cobra nada. O botão acima faz o que o ' +
+            'banco faria: avisa que o dinheiro entrou.</div>') +
+      '</div>' +
+    '</div>' +
+    (pago
+      ? '<div class="tm-ac"><button class="btn-mmo" style="--bc:var(--gold)" ' +
+        'data-verpedido="' + esc(p.n) + '">ACOMPANHAR O PEDIDO</button></div>'
+      : '') +
+    '</div></div>';
+}
+/* um QR desenhado, para a tela não ficar vazia. Não codifica nada — e a tela
+   diz isso, porque QR falso que parece verdadeiro é o tipo de coisa que faz
+   alguém tentar pagar. */
+function qrFalso(semente){
+  let s = 0;
+  for (let i = 0; i < String(semente).length; i++) s += String(semente).charCodeAt(i) * (i+1);
+  let d = "";
+  for (let y = 0; y < 21; y++)
+    for (let x = 0; x < 21; x++){
+      const canto = (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
+      const borda = canto && (x % 6 === 0 || y % 6 === 0 || (x > 1 && x < 5 && y > 1 && y < 5));
+      s = (s * 1103515245 + 12345) & 0x7fffffff;
+      if (canto ? borda : (s % 100) < 45)
+        d += '<rect x="' + x + '" y="' + y + '" width="1" height="1"/>';
+    }
+  return '<svg viewBox="0 0 21 21" shape-rendering="crispEdges" role="img" ' +
+    'aria-label="código Pix de exemplo">' + d + '</svg>' +
+    '<span class="pix-av">código de exemplo &middot; não paga nada</span>';
 }
 /* =====================================================================
    O TICKET — o que acontece depois do pagamento
@@ -8080,12 +8292,15 @@ function telaPerfil(){
       '<button class="pv-b" style="margin-top:4px;width:100%">usar a mascote</button>' +
       '</div>' +
       '<div style="flex:1;min-width:230px">' +
-      '<div class="bidgrade" style="margin-top:0;grid-template-columns:1fr">' +
-      '<div class="bidc"><label>nome de perfil</label>' +
-      '<input value="Aurora_16" style="font-size:15px"></div>' +
-      '<div class="bidc"><label>descrição — aparece no seu anúncio</label>' +
-      '<input value="Vendo desde 2024. Respondo rápido." style="font-size:13.5px;font-weight:400">' +
-      '</div></div>' +
+      /* Eram <input value="..."> soltos: dava para digitar e nada era guardado —
+         o próximo render() apagava. Agora passam pelo motor local e o que a
+         pessoa escreve sobrevive à tela e a fechar o site. */
+      '<div class="campos" style="grid-template-columns:1fr">' +
+        campoReal("perfil:nome", "nome de perfil",
+                  "Aurora_16", "texto") +
+        campoReal("perfil:desc", "descrição — aparece no seu anúncio",
+                  "Vendo desde 2024. Respondo rápido.", "area") +
+      '</div>' +
       '<div class="dica">Nome de perfil pode ser trocado <b>uma vez a cada 30 dias</b>, ' +
       'para ninguém mudar de identidade depois de um problema.</div>' +
       '</div></div></div></div>' +
@@ -8505,6 +8720,7 @@ function render(){
   /* o termo resumido vem ANTES de tudo: é porta, não destino. Só o documento
      completo pode passar por cima dele, porque é para lá que o botão manda. */
   if (termoNa && !docAberto) h = telaTermo();
+  else if (pixAberto) h = telaPix();
   else if (papelAberto) h = telaPapel(papelAberto);
   else if (aba === "ticket") h = telaTicket();
   else if (aba === "carrinho") h = telaCarrinho();
@@ -8666,6 +8882,36 @@ function render(){
     });
   const bPag = document.getElementById("btPagar");
   if (bPag) bPag.onclick = () => { aba = "pagar"; render(); window.scrollTo(0,0); };
+
+  /* ---- A COMPRA QUE TERMINA ----
+     "A compra não continua" era a primeira reclamação. Daqui para baixo ela
+     continua: gera pedido, simula o Pix caindo, e o pedido passa a existir de
+     verdade em Meus pedidos, com número e hora. */
+  ligaCampos();
+  const bPix = document.getElementById("btGerarPix");
+  if (bPix) bPix.onclick = () => {
+    if (!carrinho.length) return;
+    const n = "4" + String(1000 + EST.pedidos.length * 7 + carrinho.length);
+    EST.pedidos.unshift({
+      n: n, st: "aguardando",
+      total: totalCarrinho() * D.usd, cb: cashbackCarrinho(),
+      cupom: cupomUsado,
+      itens: carrinho.map(x => ({jogo: x.jogo, rot: x.rot, q: x.q, usd: x.usd,
+                                 gch: x.gch, gid: x.gid})),
+      hora: relogio(),
+    });
+    carrinho.length = 0; salvar();
+    pixAberto = n; aba = "pagar"; render(); window.scrollTo(0, 0);
+  };
+  const bOk = document.getElementById("btPixPago");
+  if (bOk) bOk.onclick = () => {
+    const p = EST.pedidos.find(x => x.n === pixAberto);
+    if (p){ p.st = "pago"; p.hora = relogio(); salvar(); }
+    render(); window.scrollTo(0, 0);
+  };
+  document.querySelectorAll("[data-verpedido]").forEach(b =>
+    b.onclick = () => { pixAberto = null; aba = "ticket"; tkPasso = 2;
+                        render(); window.scrollTo(0, 0); });
   /* cupom: aplicar pelo botão, pelo Enter, ou clicando no CLIENTE sugerido */
   const cxC = document.getElementById("cxCupom");
   if (cxC){
