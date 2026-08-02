@@ -881,6 +881,54 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   padding-top:8px;border-top:1px solid var(--linha)}
 .cf-av b{color:var(--txt)}
 
+/* a trilha do checkout */
+.co-tr{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 12px}
+.co-p{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--t3);
+  border:1px solid var(--linha2);padding:8px 16px;flex:1;min-width:140px}
+.co-p i{font-style:normal;width:24px;height:24px;flex:none;display:grid;place-items:center;
+  border:1px solid var(--linha2);font-family:var(--mono);font-size:12px}
+.co-p.agora{border-color:var(--gold);color:var(--txt)}
+.co-p.agora i{border-color:var(--gold);background:var(--gold);color:var(--dark);font-weight:700}
+.co-p.feito{border-color:var(--verde);color:var(--verde)}
+.co-p.feito i{border-color:var(--verde);color:var(--verde)}
+/* o que falta preencher, listado em vez de "preencha os campos" */
+.falta{border:1px solid var(--magenta);background:color-mix(in srgb,var(--magenta) 8%,transparent);
+  padding:12px 16px;margin:12px 0;font-size:13.5px;color:var(--t2)}
+.falta b{color:var(--magenta)}
+.falta ul{margin:8px 0 0;padding-left:16px}
+.falta li{line-height:1.6}
+.checkout .btn-mmo[disabled]{opacity:.4;cursor:not-allowed;filter:grayscale(.7)}
+
+/* o chat que abre com o carrinho */
+.chc{position:fixed;right:16px;bottom:64px;z-index:68;width:min(340px,calc(100vw - 32px));
+  max-height:min(420px,60vh);overflow-y:auto;border:1px solid var(--gold);
+  background:var(--deep);box-shadow:0 12px 48px rgba(var(--esc),.4);
+  opacity:0;transform:translateY(16px);pointer-events:none;transition:opacity .24s,transform .24s}
+.chc.on{opacity:1;transform:none;pointer-events:auto}
+.chc-cab{display:flex;gap:12px;align-items:center;padding:12px 16px;
+  border-bottom:1px solid var(--linha2);position:sticky;top:0;background:var(--deep)}
+.chc-cab img{width:32px;height:32px;image-rendering:pixelated}
+.chc-cab > span:first-child{width:32px;height:32px;display:grid;place-items:center;
+  background:var(--gold);color:var(--dark);font-weight:800}
+.chc-q{display:flex;flex-direction:column;flex:1;min-width:0}
+.chc-q b{font-size:13.5px}
+.chc-q i{font-style:normal;font-size:11px;color:var(--verde)}
+.chc-x{color:var(--t3);font-size:21px;line-height:1;padding:0 4px}
+.chc-x:hover{color:var(--gold)}
+.chc-m{margin:12px 16px;padding:12px;background:var(--medium);font-size:13.5px;
+  color:var(--t2);line-height:1.55}
+.chc-m.meu{background:color-mix(in srgb,var(--gold) 14%,var(--deep));
+  border:1px solid var(--linha2);margin-left:32px}
+.chc-m b{color:var(--txt)}
+.chc-cp{display:flex;gap:0;padding:12px 16px;border-top:1px solid var(--linha2);
+  position:sticky;bottom:0;background:var(--deep)}
+.chc-cp input{flex:1;min-width:0;background:var(--dark);border:1px solid var(--linha2);
+  border-right:0;color:var(--txt);font-family:inherit;font-size:13.5px;padding:12px;outline:none}
+.chc-cp input:focus{border-color:var(--gold)}
+.chc-cp button{flex:none;background:var(--gold);color:var(--dark);font-family:var(--mono);
+  font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:12px 16px;font-weight:700}
+@media(prefers-reduced-motion:reduce){.chc{transition:none}}
+
 /* o recadinho que responde quando um botão ainda não faz nada */
 .rcd{position:fixed;left:16px;right:16px;bottom:64px;z-index:70;max-width:560px;
   margin:0 auto;display:flex;gap:12px;align-items:flex-start;
@@ -2974,6 +3022,56 @@ let vendedorAberto = null;               // perfil público de outra pessoa
 let mpJogo = null;                       // marketplace: jogo escolhido no fórum
 let mpFiltro = "";                       // marketplace: chip de filtro ativo
 let pgMetodo = 0;                        // pagamento: Pix / cartão / saldo
+
+/* =====================================================================
+   O CHECKOUT EM TRÊS PASSOS, COM TRAVA
+
+   A Daoshi: "dá para avançar sem pôr os dados de login. Mas honestamente?
+   Acho que seria melhor só carrinho na primeira página, e na segunda página
+   os dados de login. E precisa pôr para avançar. Pagamento libera só no final,
+   justamente pra evitar pessoas que se recusam a passar o login."
+
+   Ela está resolvendo um problema de operação, não de tela: no bot dela o
+   pedido trava quando o cliente paga e depois não manda o login — e aí o
+   dinheiro está na casa, o fornecedor está esperando, e alguém tem que ficar
+   cobrando. Pedir os dados ANTES do pagamento mata isso na origem.
+
+   E a regra da senha é dela também, e é a melhor decisão de segurança do
+   projeto: "senha? só vamos ver enquanto fazemos o pedido. Depois disso? Deve
+   ser descartada. Salvaremos as informações principais (e-mail, nickname,
+   server) para o próximo pedido, SE O CLIENTE PERMITIR. Senha ele sempre
+   precisa enviar novamente."
+   ===================================================================== */
+let coPasso = 0;                         // 0 carrinho · 1 dados · 2 pagamento
+
+/* quais campos o carrinho inteiro precisa, sem repetir o mesmo jogo */
+function camposDoCarrinho(){
+  const vistos = {}, out = [];
+  carrinho.forEach(x => {
+    const g = D.jogos.find(j => j.ch === x.gch);
+    const m = g && g.metodos.find(k => k.gid === x.gid);
+    if (!g || !m) return;
+    const k = g.ch + "|" + m.gid;
+    if (vistos[k]) return;
+    vistos[k] = 1;
+    const fl = fluxoDe(m);
+    out.push({jogo: g.nome, ch: g.ch, gid: m.gid, rot: m.rot,
+              campos: fl.campos || [], print: !!fl.print});
+  });
+  return out;
+}
+/* é senha? senha nunca é guardada — some quando o pedido fecha */
+function ehSenha(c){ return /senha|password|pin/i.test(String(c)); }
+
+/* o que ainda falta preencher para poder pagar */
+function faltaPreencher(){
+  const falta = [];
+  camposDoCarrinho().forEach(b => b.campos.forEach(c => {
+    const ch = "jogo:" + b.ch + ":" + b.gid + ":" + c;
+    if (!String(campo(ch, "")).trim()) falta.push(b.jogo + " · " + c);
+  }));
+  return falta;
+}
 /* OS TERMOS. `termoNa` guarda para onde ir DEPOIS de aceitar ("comprar" ou
    "anunciar"), porque o resumido é uma porta que a pessoa atravessa, não um
    destino. `aceites` é um por item, não um só — ela pediu item por item. */
@@ -3033,10 +3131,41 @@ function relogio(){
   return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
 }
 function campo(chave, padrao){
+  /* senha vem da memória da aba, nunca do que ficou salvo */
+  if (ehCampoSenha(chave)) return senhaViva[chave] || "";
   return (EST.campos[chave] !== undefined && EST.campos[chave] !== null)
     ? EST.campos[chave] : (padrao || "");
 }
 function poeCampo(chave, valor){ EST.campos[chave] = valor; salvar(); }
+
+/* =====================================================================
+   A SENHA NUNCA É GUARDADA — regra dela, e é a melhor decisão de segurança
+   do projeto:
+
+     "Senha? Só vamos ver enquanto fazemos o pedido. Depois disso? Deve ser
+      descartada. Salvaremos as informações principais (e-mail, nickname,
+      server) para usar no próximo pedido, SE O CLIENTE PERMITIR. Senha ele
+      sempre precisa enviar novamente."
+
+   Sem isto o motor local guardava a senha junto com o resto — e o teste pegou:
+   na segunda compra os campos vinham preenchidos, senha inclusive. Guardar
+   senha "só na maquete" é como guardar senha em produção: um dia alguém copia
+   o padrão para o site de verdade.
+
+   `senhaViva` existe só na memória da aba. Fecha o navegador, some. */
+const senhaViva = {};
+function ehCampoSenha(chave){ return /senha|password|pin|codigo|código/i.test(chave); }
+function guardaEsse(chave){
+  if (ehCampoSenha(chave)) return false;
+  /* o resto só fica se a pessoa deixou */
+  return campo("guardarDados", "1") === "1" || chave === "guardarDados";
+}
+/* limpa qualquer senha que tenha ficado guardada por versão antiga */
+(function(){
+  let mexeu = false;
+  for (const k in EST.campos) if (ehCampoSenha(k)){ delete EST.campos[k]; mexeu = true; }
+  if (mexeu) salvar();
+})();
 
 /* desenha um campo DE VERDADE, que guarda o que foi digitado.
    `tipo` pode ser texto, senha, numero, area ou uma lista para virar select. */
@@ -3065,10 +3194,21 @@ function campoReal(chave, rot, dica, tipo, opcoes){
    "não digitável". */
 function ligaCampos(){
   document.querySelectorAll("[data-campo]").forEach(el => {
-    el.oninput = () => { EST.campos[el.dataset.campo] = el.value; salvar(); };
-    el.onchange = () => { EST.campos[el.dataset.campo] = el.value; salvar();
-                          if (el.tagName === "SELECT") repinta(); };
+    const k = el.dataset.campo;
+    const põe = () => {
+      if (ehCampoSenha(k)) senhaViva[k] = el.value;      /* só na memória */
+      else if (guardaEsse(k)){ EST.campos[k] = el.value; salvar(); }
+      else EST.campos[k] = el.value;                     /* na aba, sem salvar */
+    };
+    el.oninput = põe;
+    el.onchange = () => { põe(); if (el.tagName === "SELECT") repinta(); };
   });
+}
+/* a senha morre quando o pedido fecha — é o "descartada" dela, feito */
+function esqueceSenhas(){
+  for (const k in senhaViva) delete senhaViva[k];
+  for (const k in EST.campos) if (ehCampoSenha(k)) delete EST.campos[k];
+  salvar();
 }
 /* Redesenha SEM perder onde a pessoa estava nem o cursor do campo.
    Isto é o coração de "os campos são digitáveis": o render() reconstrói o HTML
@@ -3112,6 +3252,62 @@ let pixAberto = null;                    // número do pedido na tela do Pix
    Agora é UMA função. Toda navegação chama ela, e tela nova só precisa ser
    acrescentada aqui — num lugar só.
    ===================================================================== */
+/* =====================================================================
+   O CHAT QUE ABRE COM O CARRINHO
+
+   A Daoshi: "o chat com o cliente já abre assim que ele monta um carrinho. E o
+   chat já emite uma mensagem assim: 'se precisar de ajuda, nos avise! estamos
+   sempre disponíveis para te ajudar!'"
+
+   É o jeito dela, e faz sentido: no Discord o tópico já existe desde o começo,
+   e a pessoa fala ali se travar. Aqui, quem está com dúvida no meio da compra
+   normalmente desiste calado — este é o momento de maior desistência de
+   qualquer loja, e ninguém fica sabendo por quê.
+
+   Abre UMA vez por sessão. Chat que reabre sozinho vira propaganda.
+   ===================================================================== */
+function abreChatDaCompra(){
+  if (EST.visto.chatCompra) return;
+  EST.visto.chatCompra = 1; salvar();
+  let c = document.getElementById("chatCompra");
+  if (!c){
+    c = document.createElement("div");
+    c.id = "chatCompra"; c.className = "chc";
+    document.body.appendChild(c);
+  }
+  c.innerHTML =
+    '<div class="chc-cab">' +
+      (D.mascote ? '<img src="' + D.mascote + '" alt="">' : '<span>D</span>') +
+      '<span class="chc-q"><b>Daoshi</b><i>&#9679; online agora</i></span>' +
+      '<button class="chc-x" aria-label="fechar">&times;</button>' +
+    '</div>' +
+    '<div class="chc-m">Se precisar de ajuda, nos avise! ' +
+    'Estamos sempre disponíveis para te ajudar. &#128153;</div>' +
+    '<div class="chc-cp"><input placeholder="escreva aqui..." aria-label="mensagem">' +
+    '<button>enviar</button></div>';
+  c.classList.add("on");
+  c.querySelector(".chc-x").onclick = () => c.classList.remove("on");
+  const cp = c.querySelector("input");
+  const manda = () => {
+    const t = cp.value.trim();
+    if (!t) return;
+    const m = document.createElement("div");
+    m.className = "chc-m meu"; m.textContent = t;
+    c.insertBefore(m, c.querySelector(".chc-cp"));
+    cp.value = "";
+    setTimeout(() => {
+      const r = document.createElement("div");
+      r.className = "chc-m";
+      r.innerHTML = "Recebi! Nesta maquete eu ainda não respondo de verdade — " +
+        "no site final essa conversa fica <b>guardada dentro do seu pedido</b>.";
+      c.insertBefore(r, c.querySelector(".chc-cp"));
+      c.scrollTop = c.scrollHeight;
+    }, 700);
+  };
+  c.querySelector(".chc-cp button").onclick = manda;
+  cp.onkeydown = e => { if (e.key === "Enter") manda(); };
+}
+
 /* um recado curto no rodapé da tela, que some sozinho. Serve para o site
    responder alguma coisa em vez de ficar mudo. */
 function recadinho(html){
@@ -4816,6 +5012,10 @@ function telaComunidadeAntiga(){
    mesmo de Honkai - o que é entregue junto é o PAGAMENTO, não a conta. */
 let carrinho = [];
 function addCarrinho(g, m, item){
+  /* o chat abre assim que existe carrinho — pedido dela. É o momento de maior
+     desistência de qualquer loja, e quem trava aqui normalmente vai embora
+     calado. */
+  if (!carrinho.length) setTimeout(abreChatDaCompra, 600);
   const ch = g.ch + "|" + m.gid + "|" + item.rot;
   const achou = carrinho.find(x => x.ch === ch);
   if (achou){ achou.q += 1; return; }
@@ -6442,6 +6642,96 @@ function mascoteFall(t){ return mascoteFala(t, 78); }
    pessoa abre a tela o preco FIXA. Se ela demorar mais de 30 minutos, o
    preco e refeito - "somos como sites de hotel". Margem baixa nao aguenta
    cotacao velha. */
+/* PASSO 2 — OS DADOS. Vem ANTES do pagamento e trava o avanço.
+   Aqui também mora a regra da senha dela, dita na cara: a senha não é
+   guardada, e o resto só é guardado se a pessoa deixar. */
+function telaDados(){
+  const blocos = camposDoCarrinho();
+  const falta = faltaPreencher();
+  const guardar = campo("guardarDados", "1") === "1";
+  return '<div class="env">' + trilhaCo(1) +
+    '<div class="jpag" style="padding-top:0"><div>' +
+
+    (blocos.length ? blocos.map((b, i) =>
+      '<div class="passo"><div class="cabp"><span class="n">' + (i+1) + '</span>' +
+      '<span class="tp">' + esc(b.jogo) + '</span>' +
+      '<span class="ajuda">entrega por ' + esc(b.rot) + '</span></div>' +
+      '<div class="corpo">' +
+        (b.campos.length
+          ? '<div class="campos">' + b.campos.map(c => {
+              const ch = "jogo:" + b.ch + ":" + b.gid + ":" + c;
+              const s = ehSenha(c);
+              const cl = c.toLowerCase();
+              if (/servidor|server/.test(cl))
+                return campoReal(ch, c, "", "texto",
+                  ["Servidor 1", "Servidor 2", "Servidor 3", "SP", "NA", "EU", "SA"]);
+              return campoReal(ch, c,
+                s ? "a senha da conta do jogo" :
+                /uid/.test(cl) ? "seu número no jogo" :
+                /nick/.test(cl) ? "como você aparece no jogo" :
+                /mail|login/.test(cl) ? "o e-mail ou login da conta" : "preencher",
+                s ? "senha" : "texto"); }).join("") + '</div>'
+          : '<div class="seguro">Este método não pede nada — a entrega é por código.</div>') +
+        (b.print ? '<div class="dica">Este jogo pede <b>print da loja</b>. Você manda ' +
+          'dentro do pedido, logo depois de pagar.</div>' : "") +
+      '</div></div>').join("")
+      : '<div class="passo"><div class="corpo">' +
+        mascoteFala("O carrinho está vazio. Escolha alguma coisa primeiro.", 84) +
+        '</div></div>') +
+
+    /* a regra da senha, escrita onde a senha é digitada */
+    '<div class="passo"><div class="cabp"><span class="n">&#9679;</span>' +
+    '<span class="tp">o que a gente faz com isso</span></div><div class="corpo">' +
+      '<div class="dep"><div class="dep-t">a regra da senha</div>' +
+        '<div class="dep-p"><span class="dp-n">1</span><span>' +
+        '<b>A senha é usada e descartada</b><i>ela existe só enquanto o pedido está ' +
+        'aberto. Quando fecha, some — não fica guardada em lugar nenhum, nem para ' +
+        'você, nem para a gente.</i></span></div>' +
+        '<div class="dep-p"><span class="dp-n">2</span><span>' +
+        '<b>Toda compra você digita de novo</b><i>é chato de propósito. Senha guardada ' +
+        'é senha que vaza um dia.</i></span></div>' +
+        '<div class="dep-p"><span class="dp-n">3</span><span>' +
+        '<b>O resto só fica se você deixar</b><i>e-mail, nickname e servidor podem ficar ' +
+        'salvos para a próxima compra. Dá para desligar aqui embaixo a qualquer ' +
+        'momento.</i></span></div>' +
+      '</div>' +
+      '<label class="aceite" style="margin-top:12px">' +
+      '<input type="checkbox" id="cbGuardar"' + (guardar ? " checked" : "") + '>' +
+      '<span>Guardar <b>e-mail, nickname e servidor</b> para a próxima compra. ' +
+      '<b style="color:var(--t3);text-decoration:none;cursor:default">A senha nunca ' +
+      'é guardada.</b></span></label>' +
+    '</div></div>' +
+
+    '</div>' +
+
+    '<div class="checkout"><span class="cant2 tr"></span><span class="cant2 bl"></span>' +
+    '<div class="placa"><span class="pt2">para pagar</span><span class="orn"></span></div>' +
+    '<div class="corpo">' +
+      '<div class="lin"><span>Itens</span><b>' + nCarrinho() + '</b></div>' +
+      '<div class="tot"><span>Total</span><b>' + emReal(totalCarrinho()) + '</b></div>' +
+      (falta.length
+        ? '<div class="falta"><b>Falta preencher ' + falta.length +
+          (falta.length === 1 ? ' campo' : ' campos') + ':</b>' +
+          '<ul>' + falta.slice(0, 6).map(f => '<li>' + esc(f) + '</li>').join("") +
+          (falta.length > 6 ? '<li>e mais ' + (falta.length - 6) + '</li>' : "") + '</ul></div>'
+        : '<div class="seguro" style="color:var(--verde)">&#10003; Tudo preenchido. ' +
+          'Pode ir para o pagamento.</div>') +
+      '<button class="comprar-ja btn-mmo" id="btIrPagar"' +
+        (falta.length ? ' disabled' : '') + '>IR PARA O PAGAMENTO</button>' +
+      '<div class="seguro">O pagamento só abre com os dados preenchidos. ' +
+      '<b>É de propósito:</b> pedido pago sem login trava do outro lado, e aí você ' +
+      'fica esperando por um motivo que dava para evitar aqui.</div>' +
+    '</div></div></div></div>';
+}
+
+/* a trilha do checkout, para a pessoa saber onde está e quanto falta */
+function trilhaCo(n){
+  const passos = ["Carrinho", "Seus dados", "Pagamento"];
+  return '<div class="co-tr">' + passos.map((p, i) =>
+    '<span class="co-p ' + (i < n ? "feito" : i === n ? "agora" : "") + '">' +
+    '<i>' + (i < n ? "&#10003;" : (i+1)) + '</i>' + esc(p) + '</span>').join("") + '</div>';
+}
+
 function telaPagar(){
   const tot = totalCarrinho() * D.usd;
   const cb = cashbackCarrinho();
@@ -8964,6 +9254,7 @@ function render(){
   else if (papelAberto) h = telaPapel(papelAberto);
   else if (aba === "ticket") h = telaTicket();
   else if (aba === "carrinho") h = telaCarrinho();
+  else if (aba === "dados") h = telaDados();
   else if (aba === "pagar") h = telaPagar();
   else if (docAberto) h = telaDoc(docAberto);
   else if (aba === "docs") h = telaDocs();
@@ -9154,8 +9445,21 @@ function render(){
       else carrinho.splice(i, 1);
       render();
     });
+  /* CARRINHO -> DADOS -> PAGAMENTO.
+     Antes o carrinho ia direto para o pagamento e dava para pagar sem passar o
+     login. Ela: "pagamento libera só no final, justamente pra evitar pessoas
+     que se recusam a passar o login". */
   const bPag = document.getElementById("btPagar");
-  if (bPag) bPag.onclick = () => { aba = "pagar"; render(); window.scrollTo(0,0); };
+  if (bPag) bPag.onclick = () => { aba = "dados"; render(); window.scrollTo(0,0); };
+  const bIrP = document.getElementById("btIrPagar");
+  if (bIrP) bIrP.onclick = () => {
+    if (faltaPreencher().length) return;          /* trava dupla, além do disabled */
+    aba = "pagar"; render(); window.scrollTo(0,0);
+  };
+  const cbG = document.getElementById("cbGuardar");
+  if (cbG) cbG.onchange = () => { poeCampo("guardarDados", cbG.checked ? "1" : "0"); };
+  document.querySelectorAll("[data-covolta]").forEach(b =>
+    b.onclick = () => { aba = b.dataset.covolta; render(); window.scrollTo(0,0); });
 
   /* ---- A COMPRA QUE TERMINA ----
      "A compra não continua" era a primeira reclamação. Daqui para baixo ela
@@ -9174,7 +9478,9 @@ function render(){
                                  gch: x.gch, gid: x.gid})),
       hora: relogio(),
     });
-    carrinho.length = 0; salvar();
+    carrinho.length = 0;
+    esqueceSenhas();        /* o pedido saiu: a senha some, como ela mandou */
+    salvar();
     pixAberto = n; aba = "pagar"; render(); window.scrollTo(0, 0);
   };
   const bOk = document.getElementById("btPixPago");
