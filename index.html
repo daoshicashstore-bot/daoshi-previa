@@ -2950,7 +2950,7 @@ let mpOrdem = "rel";                     // marketplace: ordenação
 let perfilAba = "pedidos";               // perfil: pedidos, carteira, patentes, conversas...
 let staffAba = "saques";                 // painel da staff
 let docAberto = null;                    // documento legal aberto
-let tkPasso = 2;                         // ticket: em que passo do fluxo do bot está
+let tkPasso = -1;                        // ticket: -1 = cai sozinho em "Na fila"
 let papelAberto = null;                  // "recibo" ou "nf"
 let pfModo = "privado";                  // perfil: privado · chats · público
 let cqTrilha = "todas";                  // conquistas: trilha filtrada
@@ -6516,19 +6516,39 @@ function pedidoDoTicket(){
            rot:it.rot, usd:it.usd, q:1, cb:(it.cb || cbDoJogo(g.id, m.gid)),
            conta:"login e senha"}];
 }
-function passosDoTicket(fl){
-  const p = [
-    {t:"Pedido aberto",  q:"você",       b:"proceededToPayment"},
-  ];
+/* A ESTEIRA, REFEITA A PARTIR DAS CONVERSAS DE VERDADE.
+   Antes eu deduzia os passos do `credentialsSchema`. Agora eles saem de
+   /ticketChatMirror — 900 conversas lidas, 63 modelos de mensagem que se
+   repetem. O relatório está em FLUXO-REAL.md.
+
+   O QUE MUDOU, e cada um com quantas vezes aparece no banco dela:
+
+     - DADOS vêm ANTES do pagamento, não depois (304x)
+     - existe "você tem um login salvo pra esse jogo" (302x) — quem já comprou
+       não digita de novo
+     - o PRINT vem antes do pagamento (525x "screenshots recebidos")
+     - o código de segurança é uma CONVERSA de cinco falas, não um campo (73x)
+     - pedem também código de e-mail (45x) e número de telefone (20x)
+     - MIR4 gold tem um passo próprio: "o cliente marcou o gold como online no
+       mercado" (113x) — o cliente anuncia no mercado do jogo e o fornecedor
+       compra lá. Não é entrega direta, e eu não sabia disso.
+     - e o passo que eu mais senti falta: o bot PERGUNTA sozinho se chegou
+       (97x) e INSISTE se não chegou (32x). É a resposta para os 68% de
+       "em que pé está meu pedido" — o bot dela já faz isso desde sempre. */
+function passosDoTicket(fl, g){
+  const gold = g && /mir4/i.test(g.ch || "") && /gold|moeda/i.test(fl.rot || "");
+  const p = [{t:"Pedido aberto", q:"você", b:"proceededToPayment"}];
+  if (fl.campos && fl.campos.length)
+    p.push({t:"Dados da conta", q:"você", b:"awaitingCredentials"});
   if (fl.print) p.push({t:"Print enviado", q:"você", b:"screenshotsProvided"});
-  p.push({t:"Pagamento",  q:"você",       b:"isPaid"});
-  p.push({t:"Na fila",    q:"fornecedor", b:fl.forn === "sombra" ? "sombraOrderSent" :
-                                            fl.forn ? "mir4GoldAwaitingOnline" : "mihoyoOrderSent"});
-  if (fl.fornChat)    p.push({t:"Pede os dados", q:"você", b:"awaitingCredentials"});
-  if (fl.duasEtapas)  p.push({t:"Código 2 fatores", q:"você", b:"requires2FA"});
-  p.push({t:"Pode logar",  q:"fornecedor", b:"mir4GoldAwaitingReceipt"});
-  p.push({t:"Confirmação", q:"você",       b:"awaitingReceipt"});
-  p.push({t:"Fechado",     q:"—",          b:"officiallyFinalized"});
+  p.push({t:"Pagamento", q:"você", b:"isPaid"});
+  p.push({t:"Na fila", q:"fornecedor", b:fl.forn === "sombra" ? "sombraOrderSent" :
+                                         fl.forn ? "mir4GoldAwaitingOnline" : "mihoyoOrderSent"});
+  if (gold) p.push({t:"Gold no mercado", q:"você", b:"mir4GoldAwaitingOnline"});
+  if (fl.duasEtapas) p.push({t:"Código de segurança", q:"você", b:"requires2FA"});
+  p.push({t:"Pode logar", q:"fornecedor", b:"mir4GoldAwaitingReceipt"});
+  p.push({t:"Recebeu?", q:"você", b:"awaitingReceipt"});
+  p.push({t:"Fechado", q:"—", b:"officiallyFinalized"});
   return p;
 }
 function msgsDoTicket(fl, ps, ate, l0){
@@ -6581,7 +6601,14 @@ function telaTicket(){
   const g = D.jogos.find(x => x.ch === l0.gch) || D.jogos[0];
   const m = (g.metodos.find(k => k.gid === l0.gid)) || g.metodos[0];
   const fl = fluxoDe(m);
-  const ps = passosDoTicket(fl);
+  const ps = passosDoTicket(fl, g);
+  /* -1 = "escolha por mim": cai em "Na fila", que é onde a pessoa está de
+     verdade quando abre o pedido — pagou e está esperando o fornecedor. Fixar
+     um número deu errado assim que a esteira ganhou um passo novo. */
+  if (tkPasso < 0){
+    const i = ps.findIndex(x => x.t === "Na fila");
+    tkPasso = i >= 0 ? i : Math.min(2, ps.length - 1);
+  }
   if (tkPasso >= ps.length) tkPasso = ps.length - 1;
   const p = ps[tkPasso];
   const img = capaDe(g);
@@ -6599,8 +6626,10 @@ function telaTicket(){
      esperando o fornecedor. */
   /* os nomes dos passos vêm de `passosDoTicket`; eu tinha inventado outros e o
      aviso nunca aparecia. Vale enquanto o pedido depende do fornecedor. */
-  const esperando = ["Pagamento", "Na fila", "Pede os dados", "Pode logar",
-                     "Código 2 fatores"].indexOf(p.t) >= 0;
+  /* os nomes dos passos mudaram quando a esteira foi refeita com o fluxo real
+     — este aviso vale enquanto o pedido depende do fornecedor */
+  const esperando = ["Pagamento", "Na fila", "Gold no mercado",
+                     "Código de segurança", "Pode logar"].indexOf(p.t) >= 0;
   const avisoReset = esperando
     ? '<div class="reset-cx"><span class="rs-ic">&#9203;</span><span>' +
       '<b>Hoje é dia de reset no ' + esc(g.nome) + '.</b> ' +
@@ -6659,6 +6688,39 @@ function telaTicket(){
       '<span class="vv oculto">• • • • • •</span></div></div>' +
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--gold)">' +
       'ENVIAR O CÓDIGO</button></div></div>';
+  else if (p.t === "Gold no mercado")
+    /* passo que eu não sabia que existia: "o cliente marcou o gold como online
+       no mercado mir" aparece 113 vezes nas conversas dela. No MIR4 o gold não
+       é entregue na mão — o cliente ANUNCIA no mercado do jogo e o fornecedor
+       compra de lá. Sem este passo o site estava mentindo sobre como funciona. */
+    vez = '<div class="vez-cx"><div class="vez-t">&#9679; é a sua vez</div>' +
+      '<h4>Anuncie o gold no mercado do jogo</h4>' +
+      '<p>No MIR4 o gold não passa de mão em mão: você <b>coloca à venda no ' +
+      'mercado do jogo</b> pelo valor combinado, e o fornecedor compra de lá. ' +
+      'Assim que estiver anunciado, marque aqui — o fornecedor é avisado na hora.</p>' +
+      '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--gold)">' +
+      'JÁ ANUNCIEI NO MERCADO</button></div></div>';
+  else if (p.t === "Recebeu?")
+    /* O PASSO QUE FALTAVA NO SITE INTEIRO.
+       Nas conversas dela: "confirmado, vou perguntar ao cliente em N minutos
+       se ele recebeu" (97x) e, se não recebeu, "o cliente ainda não recebeu o
+       gold, vou perguntar novamente" (32x), e depois "o cliente está
+       precisando de ajudinha" para a staff (13x).
+       O bot dela PERGUNTA ANTES DE SER PERGUNTADO — e é isso que responde aos
+       68% de "em que pé está meu pedido". Meu site mostrava uma esteira parada
+       esperando a pessoa ir olhar. */
+    vez = '<div class="vez-cx"><div class="vez-t">&#9679; a Daoshi está perguntando</div>' +
+      '<h4>Chegou tudo certo?</h4>' +
+      '<p>O fornecedor avisou que terminou. <b>Confira antes de responder</b> — ' +
+      'depois de confirmar, o pedido fecha.</p>' +
+      '<div class="conf2h"><span class="c2-ic">&#9201;</span><span>' +
+      '<b>Você não precisa ficar olhando isso.</b> Se não responder, a gente ' +
+      'pergunta de novo em 10 minutos, e depois chama alguém da equipe. ' +
+      'Ninguém some com o seu pedido.</span></div>' +
+      '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--verde)">' +
+      'RECEBI, ESTÁ TUDO CERTO</button>' +
+      '<button class="btn-mmo vazio" style="--bc:var(--magenta)">não recebi</button>' +
+      '</div></div>';
   else if (p.t === "Pode logar")
     /* A JANELA DE 2 HORAS, dita ONDE ela é usada.
        A simulação de intermediação achou isto: a regra das 2 horas estava nos
@@ -9004,6 +9066,14 @@ function render(){
   if (bOk) bOk.onclick = () => {
     const p = EST.pedidos.find(x => x.n === pixAberto);
     if (p){ p.st = "pago"; p.hora = relogio(); salvar(); }
+    /* A Daoshi: "pix caiu? tem que já levar direto pra página da entrega do
+       pedido, isso se não for até mesmo a mesma página".
+       Ela está descrevendo o bot dela: no Discord o tópico começa no "quero
+       comprar" e termina no "arquivando" — nunca existiu tela de pagamento
+       separada do pedido. A tela de "pagamento confirmado" com um botão para
+       ir ver o pedido era invenção minha, e era uma parada a mais no meio do
+       caminho justamente no momento em que a pessoa quer ver a entrega. */
+    pixAberto = null; aba = "ticket"; tkPasso = -1;
     render(); window.scrollTo(0, 0);
   };
   document.querySelectorAll("[data-verpedido]").forEach(b =>
