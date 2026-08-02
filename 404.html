@@ -2044,6 +2044,86 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
   font-size:13.5px;padding:8px 12px;flex:none}
 
 /* a fila de filtros do jogo, rolando na horizontal como no Discord */
+/* =====================================================================
+   O MARKETPLACE EM DUAS COLUNAS — desenho de 02/08.
+   Filtros fixos à esquerda, resultado à direita com a contagem em cima.
+   ===================================================================== */
+.mp-jrot{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--t3);padding:16px 0 8px}
+.mp-grade{display:grid;grid-template-columns:264px minmax(0,1fr);gap:16px;
+  align-items:start}
+.mp-lado{position:sticky;top:78px}
+.mpl-cx{border:1px solid var(--linha2);background:var(--deep);padding:14px}
+.mpl-t{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--t2);
+  padding-bottom:11px;border-bottom:1px solid var(--linha)}
+.mpl-lp{font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--vibrant);border:1px solid var(--vibrant);
+  padding:3px 9px;transition:all .14s}
+.mpl-lp:hover{background:var(--vibrant);color:#fff}
+/* desligado quando não há o que limpar — a queixa dela sobre botão que clica
+   e não faz nada vale aqui igual */
+.mpl-lp.apagado{opacity:.35;cursor:default;color:var(--t3);border-color:var(--linha2)}
+.mpl-lp.apagado:hover{background:none;color:var(--t3)}
+.mpl-g{padding-top:13px}
+.mpl-r{font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+/* dentro da barra os chips embrulham em vez de rolar de lado: numa coluna de
+   264px a rolagem horizontal esconde metade das classes */
+.mp-chips.solto{flex-wrap:wrap;overflow:visible;border-bottom:0;padding:0}
+.mp-chips.solto .mpc{flex:0 0 auto;font-size:12px;padding:6px 10px}
+.mpl-fx{display:flex;align-items:center;gap:8px}
+.mpl-fx label{flex:1;min-width:0;display:flex;align-items:center;gap:5px;
+  border:1px solid var(--linha2);background:var(--medium);padding:0 9px;
+  height:34px;font-size:11px;color:var(--t3)}
+.mpl-fx label:focus-within{border-color:var(--vibrant)}
+.mpl-fx input{flex:1;min-width:0;background:none;border:0;color:var(--txt);
+  font:inherit;font-size:13px;padding:0;font-variant-numeric:tabular-nums}
+.mpl-fx input:focus{outline:none}
+.mpl-fx span{flex:none;font-size:11px;color:var(--t3)}
+.mpl-cks{display:flex;flex-direction:column;gap:2px}
+.mpl-ck{display:flex;align-items:center;gap:9px;padding:5px 2px;
+  font-size:12.5px;color:var(--t2);cursor:pointer}
+.mpl-ck:hover{color:var(--txt)}
+.mpl-ck input{flex:none;width:15px;height:15px;accent-color:var(--vibrant);
+  cursor:pointer}
+
+/* --- a coluna do resultado --- */
+.mp-rescab{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding-bottom:12px;border-bottom:1px solid var(--linha);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--t2)}
+.mp-rescab b{color:var(--gold);font-size:16px;letter-spacing:0}
+.mp-de{font-size:10px;color:var(--t3);letter-spacing:.06em}
+.mp-ordsel{margin-left:auto;display:flex;align-items:center;gap:8px;
+  font-size:10px;color:var(--t3);letter-spacing:.08em}
+.mp-ordsel select{border:1px solid var(--linha2);background:var(--medium);
+  color:var(--txt);font-family:var(--corpo);font-size:12.5px;
+  letter-spacing:normal;text-transform:none;padding:7px 10px;cursor:pointer}
+.mp-ordsel select:focus{outline:none;border-color:var(--vibrant)}
+.mp-ordsel option{background:var(--deep);color:var(--txt)}
+.mp-zero{padding:28px 4px;text-align:center;font-size:13.5px;color:var(--t2)}
+.mp-zero .mpl-lp{margin-left:8px}
+
+/* --- a paginação --- */
+.mp-pag{display:flex;align-items:center;gap:5px;flex-wrap:wrap;
+  justify-content:center;padding:4px 0 32px}
+.mpp{min-width:34px;height:34px;display:grid;place-items:center;padding:0 8px;
+  border:1px solid var(--linha2);background:var(--deep);color:var(--t2);
+  font-size:13px;font-variant-numeric:tabular-nums;transition:all .14s}
+.mpp:hover:not(:disabled){border-color:var(--magenta);color:var(--txt)}
+.mpp.on{background:var(--magenta);border-color:var(--magenta);color:#fff;
+  font-weight:800}
+.mpp:disabled{opacity:.3;cursor:default}
+.mpp-de{margin-left:10px;font-size:11px;color:var(--t3)}
+
+@media(max-width:1000px){
+  .mp-grade{grid-template-columns:1fr}
+  .mp-lado{position:static}
+  .mpl-cks{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+}
+
 .mp-chips{display:flex;gap:8px;overflow-x:auto;padding:0 0 12px;scrollbar-width:none;
   border-bottom:1px solid var(--linha)}
 .mp-chips::-webkit-scrollbar{display:none}
@@ -3941,6 +4021,15 @@ let anuncioAberto = null;                // "chave:indice" do anúncio aberto
 let vendedorAberto = null;               // perfil público de outra pessoa
 let mpJogo = null;                       // marketplace: jogo escolhido no fórum
 let mpFiltro = "";                       // marketplace: chip de filtro ativo
+/* A BARRA LATERAL DE FILTROS DO MARKETPLACE (desenho do GPT, 02/08).
+   O desenho tem também dois cursores, PODER (PP) e NÍVEL. Não entraram: o
+   valor desses atributos nos anúncios é texto livre ("180k", "422k",
+   "Imortal 2"), não número — um cursor por cima disso seria eu inventando uma
+   escala que o dado não tem. Está anotado para quando o anúncio guardar
+   número de verdade. */
+let mpDe = "", mpAte = "";               // faixa de preço digitada
+let mpTags = [];                         // características marcadas
+let mpPag = 1;                           // página da lista
 let pgMetodo = 0;                        // pagamento: Pix / cartão / saldo
 
 /* =====================================================================
@@ -4477,7 +4566,15 @@ const brl = n => "R$ " + Number(n).toLocaleString("pt-BR",
   {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const emReal = u => brl(u * D.usd);
 const usd = u => "US$ " + Number(u).toFixed(2).replace(".", ",");
-const sigla = n => n.replace(/[^A-Za-z0-9 ]/g,"").split(/\s+/).filter(Boolean)
+/* ⚠ `sigla` recebia direto e chamava `.replace` — com `undefined` ela derruba
+   o `render()` inteiro, e a tela fica em branco. Achado em 02/08 pelo
+   `achar-armadilhas`: a miniatura nova dos pedidos chama `sigla` com o nome
+   do jogo, e um pedido antigo, salvo no localStorage antes de o `gch` existir,
+   chega sem jogo nenhum. É o pior tipo de erro: só acontece com quem já usou
+   o site antes, que é justamente quem eu não consigo testar.
+   `esc` e `brl`, do lado, já tratavam nulo; esta era a única que não. */
+const sigla = n => String(n == null ? "" : n)
+                    .replace(/[^A-Za-z0-9 ]/g,"").split(/\s+/).filter(Boolean)
                     .slice(0,2).map(w=>w[0]).join("").toUpperCase() || "??";
 const temCapa = id => D.capas && D.capas[id];
 
@@ -7468,6 +7565,13 @@ function telaAnuncios(){
      título — que é onde a informação está espalhada hoje */
   const doJogo = lista.filter(a => {
     if (a.g !== jogoAtivo) return false;
+    /* preço e características vêm da barra lateral nova; o chip continua
+       valendo por cima, e os três se somam em vez de um anular o outro */
+    const p = Number(a.p) || 0;
+    if (mpDe !== "" && p < Number(mpDe)) return false;
+    if (mpAte !== "" && p > Number(mpAte)) return false;
+    if (mpTags.length && !mpTags.every(t => (a.tags || []).indexOf(t) >= 0))
+      return false;
     if (!mpFiltro) return true;
     const f = mpFiltro.toLowerCase();
     const cls = (F.classes[a.n.length % Math.max(1, F.classes.length)] || [""])[0];
@@ -7476,6 +7580,21 @@ function telaAnuncios(){
            String(a.n).toLowerCase().indexOf(f) >= 0 ||
            (a.at || []).some(x => String(x[1]).toLowerCase().indexOf(f) >= 0);
   });
+  /* as características oferecidas são as que EXISTEM nos anúncios deste jogo —
+     não a tabela inteira de TAGS. Oferecer "sem e-mail" num jogo onde nenhuma
+     conta tem essa etiqueta é prometer um filtro que sempre devolve zero. */
+  const tagsDoJogoMp = (() => {
+    const s = new Set();
+    lista.filter(a => a.g === jogoAtivo)
+         .forEach(a => (a.tags || []).forEach(t => s.add(t)));
+    return [...s];
+  })();
+  const filtroMpLigado = () =>
+    !!(mpFiltro || mpDe !== "" || mpAte !== "" || mpTags.length);
+  const POR_PAGINA = 12;
+  const nPags = Math.max(1, Math.ceil(doJogo.length / POR_PAGINA));
+  if (mpPag > nPags) mpPag = 1;
+  const naPagina = doJogo.slice((mpPag - 1) * POR_PAGINA, mpPag * POR_PAGINA);
 
   /* as fotos: uso as capas dos jogos como recheio, porque print de conta de
      verdade é dado de cliente e não entra num protótipo que fica no ar */
@@ -7510,30 +7629,88 @@ function telaAnuncios(){
     /* linha 1: qual jogo */
     /* o chip do jogo leva o ÍCONE do jogo, não uma bolinha vermelha —
        pedido dela, e faz sentido: com 6 jogos a bolinha não diz nada */
-    '<div class="mp-chips" style="border:0;padding-bottom:8px">' + jogosMp.map(j => {
+    '<div class="mp-jrot">Escolha o jogo</div>' +
+    '<div class="mp-chips jogos" style="border:0;padding-bottom:8px">' + jogosMp.map(j => {
       const ic = iconeDoNome(j);
       return '<button class="mpc ' + (j === jogoAtivo ? "on" : "") + '" data-mpjogo="' + esc(j) +
         '" style="--cc:var(--magenta)">' +
         (ic ? '<img class="mpc-ic" src="' + ic + '" alt="">' : '<i></i>') +
         esc(j) + '</button>'; }).join("") + '</div>' +
-    /* linha 2: os filtros daquele jogo */
-    /* OS CHIPS AGORA FILTRAM DE VERDADE.
-       O varredor de armadilhas achou 9 botões mortos só nesta tela — e eram
-       justamente estes. Filtro que não filtra é pior que filtro nenhum: a
-       pessoa clica, nada muda, e conclui que o site está quebrado. */
-    '<div class="mp-chips">' +
-      '<button class="mpc ' + (mpFiltro ? "" : "on") + '" style="--cc:var(--gold)" ' +
-      'data-mpf="">Todos</button>' +
-      F.classes.map(c => '<button class="mpc' + (mpFiltro === c[0] ? " on" : "") +
-        '" style="--cc:' + c[1] + '" data-mpf="' + esc(c[0]) + '"><i></i>' +
-        esc(c[0]) + '</button>').join("") +
-      F.extras.map(e => '<button class="mpc' + (mpFiltro === e ? " on" : "") +
-        '" style="--cc:var(--light)" data-mpf="' + esc(e) + '">' +
-        esc(e) + '</button>').join("") +
-      '<button class="mpc sugerir" data-sugfiltro="' + esc(jogoAtivo) + '">' +
-      '&#10010; sugerir filtro</button>' +
-    '</div>' +
-    '<div class="forum">' + doJogo.map((a, k) => {
+    /* =================================================================
+       DUAS COLUNAS, do desenho de 02/08: os filtros à esquerda, fixos, e o
+       resultado à direita com a contagem em cima.
+
+       Antes as duas fileiras de chips ficavam empilhadas acima da lista.
+       Funcionava com 6 classes; com as 5 extras e as características o
+       cabeçalho passava de 3 linhas e empurrava o primeiro anúncio para
+       fora da tela — a vitrine começava abaixo da dobra.
+       ================================================================= */
+    '<div class="mp-grade">' +
+
+    '<aside class="mp-lado">' +
+      '<div class="mpl-cx">' +
+        '<div class="mpl-t">Filtros' +
+          '<button class="mpl-lp' + (filtroMpLigado() ? "" : " apagado") + '" ' +
+            'id="mpLimpa"' + (filtroMpLigado() ? "" : " disabled") + '>Limpar tudo</button>' +
+        '</div>' +
+
+        '<div class="mpl-g"><div class="mpl-r">Classe</div>' +
+        '<div class="mp-chips solto">' +
+          '<button class="mpc ' + (mpFiltro ? "" : "on") + '" style="--cc:var(--gold)" ' +
+          'data-mpf="">Todas</button>' +
+          F.classes.map(c => '<button class="mpc' + (mpFiltro === c[0] ? " on" : "") +
+            '" style="--cc:' + c[1] + '" data-mpf="' + esc(c[0]) + '"><i></i>' +
+            esc(c[0]) + '</button>').join("") +
+        '</div></div>' +
+
+        (F.extras.length
+          ? '<div class="mpl-g"><div class="mpl-r">Marcadores</div>' +
+            '<div class="mp-chips solto">' + F.extras.map(e =>
+              '<button class="mpc' + (mpFiltro === e ? " on" : "") +
+              '" style="--cc:var(--light)" data-mpf="' + esc(e) + '">' +
+              esc(e) + '</button>').join("") + '</div></div>'
+          : "") +
+
+        '<div class="mpl-g"><div class="mpl-r">Preço</div>' +
+        '<div class="mpl-fx">' +
+          '<label>R$<input type="number" id="mpDe" min="0" placeholder="0,00" ' +
+            'value="' + esc(mpDe) + '" aria-label="preço mínimo"></label>' +
+          '<span>até</span>' +
+          '<label>R$<input type="number" id="mpAte" min="0" placeholder="9999,99" ' +
+            'value="' + esc(mpAte) + '" aria-label="preço máximo"></label>' +
+        '</div></div>' +
+
+        (tagsDoJogoMp.length
+          ? '<div class="mpl-g"><div class="mpl-r">Características</div>' +
+            '<div class="mpl-cks">' + tagsDoJogoMp.map(t =>
+              '<label class="mpl-ck"><input type="checkbox" data-mptag="' + esc(t) + '"' +
+              (mpTags.indexOf(t) >= 0 ? " checked" : "") + '>' +
+              '<span>' + esc(t) + '</span></label>').join("") + '</div></div>'
+          : "") +
+
+        '<button class="mpc sugerir" data-sugfiltro="' + esc(jogoAtivo) + '" ' +
+          'style="width:100%;justify-content:center;margin-top:12px">' +
+          '&#10010; sugerir filtro</button>' +
+      '</div>' +
+    '</aside>' +
+
+    '<div class="mp-res">' +
+      /* O CABEÇALHO DE RESULTADO: quantos sobraram e como estão ordenados.
+         É a primeira coisa que a pessoa procura depois de mexer num filtro. */
+      '<div class="mp-rescab">' +
+        '<b>' + doJogo.length + '</b> ' +
+        (doJogo.length === 1 ? "conta encontrada" : "contas encontradas") +
+        (filtroMpLigado()
+          ? '<span class="mp-de">de ' + lista.filter(a => a.g === jogoAtivo).length +
+            ' no ' + esc(jogoAtivo) + '</span>' : "") +
+        '<label class="mp-ordsel">Ordenar por' +
+          '<select id="mpOrd">' +
+            [["rel","Mais recentes"],["menor","Mais baratos"],["maior","Mais caros"]]
+              .map(o => '<option value="' + o[0] + '"' +
+                (mpOrdem === o[0] ? " selected" : "") + '>' + o[1] + '</option>').join("") +
+          '</select></label>' +
+      '</div>' +
+    '<div class="forum">' + naPagina.map((a, k) => {
       const horas = [2, 26, 1, 74, 6, 96][k % 6];
       return '<button class="fp" data-anabre="' + ondeMora(a) + '">' +
       '<span class="fp-cab"><span class="fp-au">' + esc((a.vend || {}).n || "vendedor") + '</span>' +
@@ -7551,7 +7728,35 @@ function telaAnuncios(){
       '</span>' + marca("selo") +
       '<span class="fp-pr">' + brl(a.p) + '</span></span>' +
       '</button>';
-    }).join("") + '</div>';
+    }).join("") + '</div>' +
+
+    /* NADA SOBROU: a lista vazia tem que dizer o que fazer, e o botão tem que
+       ser o mesmo `mpLimpa` — se eu criasse um segundo id aqui, um dos dois ia
+       parar de funcionar na primeira mudança e ninguém notaria. */
+    (doJogo.length ? "" :
+      '<div class="mp-zero">Nenhuma conta de <b>' + esc(jogoAtivo) +
+      '</b> com esses filtros. ' +
+      '<button class="mpl-lp" id="mpLimpa2">Limpar tudo</button></div>') +
+
+    /* A PAGINAÇÃO do desenho. Só aparece quando há mais de uma página —
+       "1" sozinho embaixo de 4 anúncios é enfeite. */
+    (nPags > 1
+      ? '<div class="mp-pag">' +
+        '<button class="mpp" data-mppag="1"' + (mpPag === 1 ? " disabled" : "") +
+          ' aria-label="primeira página">&laquo;</button>' +
+        '<button class="mpp" data-mppag="' + (mpPag - 1) + '"' +
+          (mpPag === 1 ? " disabled" : "") + ' aria-label="anterior">&lsaquo;</button>' +
+        Array.from({length: nPags}, (_, i) => i + 1).map(n =>
+          '<button class="mpp' + (n === mpPag ? " on" : "") + '" data-mppag="' + n +
+          '"' + (n === mpPag ? ' aria-current="page"' : "") + '>' + n + '</button>').join("") +
+        '<button class="mpp" data-mppag="' + (mpPag + 1) + '"' +
+          (mpPag === nPags ? " disabled" : "") + ' aria-label="próxima">&rsaquo;</button>' +
+        '<button class="mpp" data-mppag="' + nPags + '"' +
+          (mpPag === nPags ? " disabled" : "") + ' aria-label="última">&raquo;</button>' +
+        '<span class="mpp-de">' + POR_PAGINA + ' por página</span>' +
+        '</div>'
+      : "") +
+    '</div></div>';
 
   /* SEM NENHUM ANÚNCIO, a tela inteira é o vazio — nada de fórum com zero
      postagens, filtro filtrando nada e "0 no total". Isso é o que ela vai ver
@@ -12194,10 +12399,13 @@ function telaPerfil(){
        02/08 têm a capinha à esquerda de cada pedido, e é o que faz a lista
        ser lida de relance em vez de ser um bloco de texto. */
     const mini = ch => {
-      const g = D.jogos.find(x => x.ch === ch);
+      /* `ch` pode chegar vazio: pedido guardado no navegador antes de o item
+         passar a gravar `gch`. Sem jogo, a miniatura é a sigla; sem nem o
+         nome, é um quadradinho neutro — nunca um erro que apaga a tela. */
+      const g = ch ? D.jogos.find(x => x.ch === ch) : null;
       const im = g && (iconeOficial(g) || capaCardDe(g) || posterDe(g));
       return '<span class="an-th">' + (im ? '<img src="' + im + '" alt="">'
-        : '<i>' + esc(sigla((g && g.nome) || ch)) + '</i>') + '</span>';
+        : '<i>' + esc(sigla((g && g.nome) || ch || "")) + '</i>') + '</span>';
     };
 
     /* ⚠ OS PEDIDOS DELA VÊM PRIMEIRO, E ANTES NÃO VINHAM.
@@ -12710,12 +12918,42 @@ function render(){
   document.querySelectorAll("[data-anfecha]").forEach(b =>
     b.onclick = () => { anuncioAberto = null; render(); window.scrollTo(0,0); });
   document.querySelectorAll("[data-mpjogo]").forEach(b =>
-    b.onclick = () => { mpJogo = b.dataset.mpjogo; mpFiltro = ""; render(); });
+    /* trocar de jogo zera TUDO: as classes, as características e a página são
+       daquele jogo. Deixar "Arqueira" ligado ao pular para Valorant devolvia
+       zero anúncio e parecia vitrine vazia. */
+    b.onclick = () => { mpJogo = b.dataset.mpjogo; mpFiltro = ""; mpTags = [];
+                        mpDe = mpAte = ""; mpPag = 1; render(); });
   /* os chips de filtro: clicar no mesmo tira o filtro */
   document.querySelectorAll("[data-mpf]").forEach(b =>
     b.onclick = () => { const v = b.dataset.mpf;
-                        mpFiltro = (mpFiltro === v) ? "" : v;
+                        mpFiltro = (mpFiltro === v) ? "" : v; mpPag = 1;
                         const y = window.scrollY; render(); window.scrollTo(0, y); });
+
+  /* ---- A BARRA LATERAL DO MARKETPLACE (desenho de 02/08) ---- */
+  const mesmoLugar = () => { const y = window.scrollY; render(); window.scrollTo(0, y); };
+  [["mpDe", v => mpDe = v], ["mpAte", v => mpAte = v]].forEach(par => {
+    const el = document.getElementById(par[0]);
+    if (!el) return;
+    /* no `change`, não no `input`: repintar a cada dígito faz o campo perder o
+       foco no meio do número, que foi exatamente o defeito que eu já tinha
+       consertado na busca da vitrine */
+    el.onchange = () => { par[1](el.value); mpPag = 1; mesmoLugar(); };
+  });
+  document.querySelectorAll("[data-mptag]").forEach(c =>
+    c.onchange = () => { const t = c.dataset.mptag;
+      mpTags = c.checked ? mpTags.concat([t]) : mpTags.filter(x => x !== t);
+      mpPag = 1; mesmoLugar(); });
+  ["mpLimpa", "mpLimpa2"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.onclick = () => { mpFiltro = ""; mpTags = []; mpDe = mpAte = "";
+                                 mpPag = 1; mesmoLugar(); };
+  });
+  const mpo = document.getElementById("mpOrd");
+  if (mpo) mpo.onchange = () => { mpOrdem = mpo.value; mpPag = 1; mesmoLugar(); };
+  document.querySelectorAll("[data-mppag]").forEach(b =>
+    b.onclick = () => { mpPag = +b.dataset.mppag; render();
+                        const r = document.querySelector(".mp-rescab");
+                        if (r) r.scrollIntoView({block: "start"}); });
   /* a forma de pagamento: eram três botões desenhados e nenhum clicável */
   document.querySelectorAll("[data-pgm]").forEach(b =>
     b.onclick = () => { pgMetodo = +b.dataset.pgm;
