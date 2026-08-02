@@ -721,8 +721,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .jogo .fatia{position:absolute;top:0;right:0;z-index:4;font-family:var(--mono);
   font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;
   background:var(--gold);color:var(--dark);font-weight:800;white-space:nowrap}
+/* O CARD DO JOGO: fundo desfocado + ÍCONE OFICIAL por cima.
+   A Daoshi, olhando os cards com os screenshots da Play Store: "amigo isso não
+   são os ícones do jogo". Ela está certa — screenshot de loja é banner de
+   anúncio com texto queimado dentro ("New Craftable Accessories", "Ascensão
+   dos Heróis"), e cortado no card vira frase pela metade.
+   Agora o banner só existe DESFOCADO no fundo, onde o texto vira borrão de cor
+   e ninguém lê, e quem identifica o jogo é o ícone oficial — quadrado, limpo,
+   a mesma cara que a pessoa já conhece da tela do celular dela. */
 .jogo .capa{aspect-ratio:1/1;display:grid;place-items:center;position:relative;overflow:hidden;
   background:linear-gradient(150deg,var(--medium),var(--dark))}
+.cp-fundo{position:absolute;inset:-14%;background-size:cover;background-position:center;
+  filter:blur(17px) saturate(1.35) brightness(.82);opacity:.62;z-index:0}
+.jogo .capa .cp-ic{position:relative;z-index:1;width:70%;height:70%;object-fit:contain;
+  display:block;transition:transform .3s;
+  box-shadow:0 8px 26px rgba(var(--esc),.45);border-radius:18%}
+.jogo:hover .capa .cp-ic{transform:scale(1.06)}
 .jogo .capa img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
 .jogo:hover .capa img{transform:scale(1.06)}
 .jogo .capa .sig{font-family:var(--mono);font-size:30px;font-weight:800;letter-spacing:.06em;color:var(--c)}
@@ -2042,10 +2056,15 @@ a.rod-l:hover{color:var(--rc)}
   padding:16px;border:1px solid var(--linha2);background:
     repeating-linear-gradient(135deg, rgba(var(--cla),.012) 0 2px, transparent 2px 6px),
     linear-gradient(100deg, color-mix(in srgb, var(--c) 16%, var(--medium)), var(--deep) 62%)}
-.jt-bg{position:absolute;inset:0;background-image:var(--capa);background-size:cover;
-  background-position:center 32%;opacity:.30;pointer-events:none;
-  -webkit-mask-image:linear-gradient(90deg,transparent 0%,transparent 34%,#000 78%);
-  mask-image:linear-gradient(90deg,transparent 0%,transparent 34%,#000 78%)}
+/* DESFOCADO de propósito. A arte larga da Play Store tem texto de propaganda
+   queimado dentro; nítida ela vira um anúncio em coreano atrás do nome do
+   jogo. Desfocada, ela é só a cor daquele jogo — que é tudo o que ela precisa
+   ser aqui. Quem identifica é o ícone, ao lado. */
+.jt-bg{position:absolute;inset:-6%;background-image:var(--capa);background-size:cover;
+  background-position:center 34%;opacity:.42;pointer-events:none;
+  filter:blur(22px) saturate(1.4) brightness(.9);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,transparent 22%,#000 70%);
+  mask-image:linear-gradient(90deg,transparent 0%,transparent 22%,#000 70%)}
 .jtopo > *:not(.jt-bg){position:relative;z-index:1}
 @media(max-width:700px){
   /* no celular o texto ocupa a largura toda: a arte vira um véu de cima */
@@ -3304,14 +3323,41 @@ function melhorOferta(itens){
 }
 
 /* a capa pode estar guardada com o id de qualquer um dos metodos do jogo */
-/* A CAPA DO JOGO.
-   A ARTE NOVA VEM PRIMEIRO. Ela é a única que é padronizada — 800x450, mesma
-   proporção, mesmo recorte, mesma qualidade, buscada das capturas oficiais da
-   Play Store. As capas antigas continuam como último recurso para os 8 jogos
-   que ainda não têm arte (nome de pacote errado), mas são elas que a Daoshi
-   chamou de "desproporcional e não padronizado" — uma redonda, outra só um
-   logotipo. Onde existe arte nova, a antiga não aparece mais. */
-function capaDe(g){
+/* ---------------------------------------------------------------------
+   A ARTE DO JOGO — e o erro que eu cometi duas vezes seguidas.
+
+   1ª vez: usei as capas velhas, de fontes diferentes e formatos diferentes.
+   A Daoshi: "o genshin é redondo, o mir4 é só uma logo horrível, tá
+   desproporcional e não tá padronizado".
+
+   2ª vez: fui buscar na Play Store — mas peguei os SCREENSHOTS. Eles são
+   banners de anúncio com TEXTO QUEIMADO DENTRO: "New Craftable Accessories",
+   "Ascensão dos Heróis", "EXPERIENCE A REAL RPG", texto em coreano. Cortados
+   no card, viram frase pela metade. A Daoshi: "amigo isso não são os ícones
+   do jogo".
+
+   Ela está certa nas duas. O que serve para identificar um jogo num card é o
+   ÍCONE OFICIAL: quadrado, limpo, sem texto, é a cara que a pessoa já conhece
+   da tela do celular dela. É o que a Codashop usa.
+
+   Então: ÍCONE em primeiro lugar, sempre. A arte larga (screenshot) fica só
+   como FUNDO desfocado atrás dele, onde o texto queimado vira borrão de cor e
+   nunca é lido. Assim cada jogo tem a cor dele sem ninguém ler propaganda.
+   --------------------------------------------------------------------- */
+function iconeOficial(g){
+  const P = D.playstore || {};
+  if (P[g.ch]) return P[g.ch];
+  if (P[g.id]) return P[g.id];
+  for (const m of (g.metodos || [])) if (P[m.gid]) return P[m.gid];
+  if (D.emojis){
+    if (D.emojis[g.id]) return D.emojis[g.id];
+    for (const m of (g.metodos || [])) if (D.emojis[m.gid]) return D.emojis[m.gid];
+    for (const id of (g.capaIds || [])) if (D.emojis[id]) return D.emojis[id];
+  }
+  return null;
+}
+/* o fundo: a arte larga, que só aparece desfocada atrás do ícone */
+function fundoDe(g){
   const A = D.arteJogo || {};
   if (A[g.ch]) return A[g.ch];
   if (A[g.id]) return A[g.id];
@@ -3319,12 +3365,9 @@ function capaDe(g){
   for (const id of (g.capaIds || [g.id])) if (temCapa(id)) return D.capas[id];
   return null;
 }
-/* true quando a capa é da leva nova (padronizada). Serve para o CSS saber que
-   pode confiar na proporção e cortar sem medo. */
-function capaPadrao(g){
-  const A = D.arteJogo || {};
-  return !!(A[g.ch] || A[g.id] || (g.metodos || []).some(m => A[m.gid]));
-}
+/* capaDe continua existindo porque meia dúzia de telas chama por ele —
+   mas agora devolve o ÍCONE, que é o que identifica o jogo. */
+function capaDe(g){ return iconeOficial(g) || fundoDe(g); }
 /* O QUE VENDEMOS, com cor por tipo. A Daoshi nao conseguia enxergar essas
    etiquetas: eram todas douradas, minusculas, com fundo de 6% de opacidade.
    Agora cada tipo tem a sua cor (tres delas sao as da propria mascote). */
@@ -3498,16 +3541,17 @@ function telaGames(){
       /* ---- cabeçalho compacto: ícone, nome, o que vendemos, e as abas de
          método. Tudo que a pessoa precisa saber antes de escolher o valor. ---- */
       '<div class="jtopo" style="--c:' + c + '">' +
-        /* a capa vira o banner do fundo — o "quadradão vazio" resolvido */
-        (img ? '<span class="jt-bg" style="--capa:url(' + img + ')"></span>' : "") +
+        /* a arte larga entra DESFOCADA no fundo — o "quadradão vazio"
+           resolvido sem virar outdoor de propaganda */
+        (() => { const f = fundoDe(g);
+          return f ? '<span class="jt-bg" style="--capa:url(' + f + ')"></span>' : ""; })() +
         /* A Daoshi: "ícone da playstore tá só em alguns lugares — não no
            principal". Era aqui: o quadrado grande usava a CAPA (a arte larga,
            escura, de baixo contraste) enquanto o ícone limpo de 512 px ficava
            num selo de 28 px ao lado do nome. Agora o grande é o bom, e a capa
            só entra se não existir ícone. */
-        '<div class="jt-art">' + (() => { const ps = emojiDoJogo(g, m);
-          if (ps) return '<img src="' + ps + '" alt="">';
-          if (img) return '<img src="' + img + '" alt="">';
+        '<div class="jt-art">' + (() => { const ic = iconeOficial(g) || emojiDoJogo(g, m);
+          if (ic) return '<img src="' + ic + '" alt="">';
           return '<span class="sig">' + esc(sigla(g.nome)) + '</span>'; })() + '</div>' +
         '<div class="jt-info">' +
           /* o ícone saiu daqui: ele agora é o quadrado grande ao lado. Repetir
@@ -3774,7 +3818,7 @@ function telaGames(){
    UID), e a etiqueta da capa mostra o método da categoria em vez da contagem. */
 function cartaoJogo(g, cat, im, pct){
   const c = PORTAS.store.cor;
-  const img = capaDe(g);
+  const ic = iconeOficial(g), fundo = fundoDe(g);
   const mets = metodosAtivos(g);
   const daCat = (im !== undefined && mets[im]) ? mets[im] : null;
   return '<button class="jogo" data-jogo="' + esc(g.ch) + '"' +
@@ -3788,8 +3832,12 @@ function cartaoJogo(g, cat, im, pct){
       : mets.length > 1
         ? '<span class="tipo">' + mets.length + ' métodos</span>'
         : '<span class="tipo">' + esc(mets[0].rot) + '</span>') +
-    (img ? '<img src="' + img + '" alt="">'
-         : '<span class="sig">' + esc(sigla(g.nome)) + '</span>') + '</span>' +
+    /* fundo desfocado + ícone oficial por cima. O texto queimado do banner
+       vira borrão de cor e nunca é lido; quem identifica o jogo é o ícone. */
+    (fundo && fundo !== ic
+      ? '<span class="cp-fundo" style="background-image:url(' + fundo + ')"></span>' : "") +
+    (ic ? '<img class="cp-ic" src="' + ic + '" alt="">'
+        : '<span class="sig">' + esc(sigla(g.nome)) + '</span>') + '</span>' +
     '<span class="corpo"><span class="nome">' + esc(g.nome) + '</span>' +
     /* O QUE VENDEMOS: era isso que faltava. "8 pacotes" nao diferencia de
        ninguem; dizer que aqui tem gold, pack E wemix, sim. Agora com cor
