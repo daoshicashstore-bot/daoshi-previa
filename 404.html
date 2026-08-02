@@ -2648,6 +2648,31 @@ a.rod-l:hover{color:var(--rc)}
 .bt-saque{border:1px solid var(--magenta);color:var(--magenta);padding:8px;
   font-size:13.5px;font-weight:700;letter-spacing:.04em}
 .bt-saque:hover{background:var(--magenta);color:var(--dark)}
+/* A DIVISÃO DO GOLD em anúncios — regra lida do código dela.
+   Cada parte é uma pílula com o número da ordem, para a pessoa conferir um
+   por um enquanto anuncia. */
+.gd-div{border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 7%,transparent);
+  padding:12px 14px;margin-top:12px}
+.gd-t{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:10px}
+.gd-l{display:flex;gap:6px;flex-wrap:wrap}
+.gd-p{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--linha2);
+  background:var(--deep);padding:7px 12px;font-size:15px;font-weight:700;
+  font-variant-numeric:tabular-nums}
+.gd-p i{font-style:normal;width:18px;height:18px;display:grid;place-items:center;
+  background:var(--gold);color:var(--dark);font-family:var(--mono);font-size:11px;
+  font-weight:800;flex:none}
+.gd-p2{margin-top:10px;font-size:12px;color:var(--t3);line-height:1.6;max-width:64ch}
+/* o aviso de entrega manual do TWD — âmbar, que é atenção e não alarme.
+   A cor é escolha do código dela: "glass leve amber (atenção mas não alerta
+   vermelho), NÃO usa aurora roxa porque não tem ação". */
+.twd-cx{border:1px solid var(--amber);background:color-mix(in srgb,var(--amber) 8%,transparent);
+  padding:14px 16px;margin-top:14px}
+.twd-t{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:8px}
+.twd-cx p{font-size:13.5px;color:var(--t2);line-height:1.65;max-width:64ch}
+.twd-p2{margin-top:8px;font-size:12px;color:var(--t3)}
+
 /* o pedido de saque: campo, valor e a lista do que já foi pedido */
 .sq-cx{border:1px solid var(--linha2);padding:12px;display:flex;flex-direction:column;gap:6px}
 .sq-cx label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;
@@ -8443,25 +8468,100 @@ function ateOndePode(ps, fl, g){
     if (!passoCumprido(ps[i], fl, g)) return i;
   return ps.length - 1;
 }
+/* =====================================================================
+   O GOLD, COMO O CÓDIGO DELA FAZ DE VERDADE
+
+   Lido de `lib/server/order-builder.ts` no repositório do Mininix, que por
+   sua vez espelha `discord-bot/utils.js`. Duas regras que eu não sabia:
+
+   1. TEM TAXA. `goldFeeMultiplier`, padrão **1,053** — 5,3% somados à
+      quantidade ANTES de dividir. Sai do registro do jogo e varia por jogo.
+
+   2. É DIVIDIDO EM PARTES, e o motivo não é técnico:
+        · abaixo de 10.000 não divide
+        · acima, são 2 partes a cada 10 mil completos
+        · com variação de ±3% entre elas
+        · a última parte recebe o resto exato
+      A variação existe para a entrega **não parecer robô** no mercado do
+      jogo. Valor redondo repetido chama atenção de quem fiscaliza.
+
+   Aqui eu reproduzo a conta. A variação aleatória do original vira uma
+   variação ESTÁVEL (derivada da própria quantidade), porque uma tela que
+   mostra números diferentes a cada render parece defeito — no site real
+   quem sorteia é o servidor, uma vez só.
+   ===================================================================== */
+const GOLD_TAXA_PADRAO = 1.053;
+
+function goldComTaxa(qtd, taxa){
+  const t = (typeof taxa === "number" && taxa > 0) ? taxa : GOLD_TAXA_PADRAO;
+  return Math.floor(qtd * t);
+}
+
+function dividirGold(total){
+  if (total <= 0) return [];
+  if (total < 10000) return [total];
+  const n = Math.floor(total / 10000) * 2;
+  if (n <= 1) return [total];
+  const partes = [];
+  let resta = total;
+  for (let i = 0; i < n - 1; i++){
+    const metade = resta / (n - i);
+    /* no lugar do sorteio: uma variação estável, tirada do próprio número.
+       Mesma faixa de ±3%, mesmo resultado toda vez que a tela desenha. */
+    const giro = Math.sin((total % 9973) + i * 7.13);
+    const parte = Math.floor(metade + metade * 0.03 * giro);
+    partes.push(parte);
+    resta -= parte;
+  }
+  partes.push(resta);
+  return partes;
+}
+
 function passosDoTicket(fl, g){
   /* agora o gold é reconhecido pelo GID, que é o jeito certo — antes eu olhava
      o rótulo do método e nunca batia */
   if (fl.gid === "mir4gold" || /gold/i.test(fl.contaRot || "") ||
       (g && /mir4/i.test(g.ch || "") && /gold/i.test(fl.rot || "")))
     return passosDoGold();
+  /* ====================================================================
+     O VOCABULÁRIO É O DA LOJA — lido de `lib/chat-status.ts` no repositório
+     do Mininix, não inventado por mim.
+
+     Os estados de verdade, e o que o painel dela mostra para cada um:
+       choosing_packs         "Montando carrinho"
+       filling_account        "Preenchendo conta"
+       uploading_screenshots  "Enviando prints"
+       awaiting_payment       "Aguardando PIX"
+       paid / fulfillment     pago
+       completed              concluído
+
+     Por que isso importa: se o painel dela diz "Preenchendo conta" e o site
+     diz "Dados da conta", são dois vocabulários para a mesma coisa — e a
+     Daoshi vira tradutora entre os dois toda vez que abre um ticket. Guardo
+     também a chave (`e:`) para o dia em que o site conversar com o banco.
+     ==================================================================== */
   const gold = false;
-  const p = [{t:"Pedido aberto", q:"você", b:"proceededToPayment"}];
+  const p = [{t:"Pedido aberto", q:"você", b:"proceededToPayment",
+              e:"choosing_packs"}];
   if (fl.campos && fl.campos.length)
-    p.push({t:"Dados da conta", q:"você", b:"awaitingCredentials"});
-  if (fl.print) p.push({t:"Print enviado", q:"você", b:"screenshotsProvided"});
-  p.push({t:"Pagamento", q:"você", b:"isPaid"});
-  p.push({t:"Na fila", q:"fornecedor", b:fl.forn === "sombra" ? "sombraOrderSent" :
-                                         fl.forn ? "mir4GoldAwaitingOnline" : "mihoyoOrderSent"});
+    p.push({t:"Preenchendo conta", q:"você", b:"awaitingCredentials",
+            e:"filling_account"});
+  if (fl.print) p.push({t:"Enviando prints", q:"você", b:"screenshotsProvided",
+                        e:"uploading_screenshots"});
+  p.push({t:"Aguardando Pix", q:"você", b:"isPaid", e:"awaiting_payment"});
+  /* "No painel do fornecedor" é o nome que o código usa (lá está escrito
+     "no painel do chinês", que é como a equipe fala internamente — no site
+     vai o termo que o cliente entende). E é aqui que vale o limite de 10
+     minutos: passou disso sem retorno, o estado vira alerta. */
+  p.push({t:"No painel do fornecedor", q:"fornecedor", e:"paid",
+          limite:10,
+          b:fl.forn === "sombra" ? "sombraOrderSent" :
+            fl.forn ? "mir4GoldAwaitingOnline" : "mihoyoOrderSent"});
   if (gold) p.push({t:"Gold no mercado", q:"você", b:"mir4GoldAwaitingOnline"});
   if (fl.duasEtapas) p.push({t:"Código de segurança", q:"você", b:"requires2FA"});
   p.push({t:"Pode logar", q:"fornecedor", b:"mir4GoldAwaitingReceipt"});
   p.push({t:"Recebeu?", q:"você", b:"awaitingReceipt"});
-  p.push({t:"Fechado", q:"—", b:"officiallyFinalized"});
+  p.push({t:"Concluído", q:"—", b:"officiallyFinalized", e:"completed"});
   return p;
 }
 function msgsDoTicket(fl, ps, ate, l0){
@@ -8569,11 +8669,25 @@ function telaTicket(){
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--verde)">' +
       'JÁ PAGUEI</button>' +
       '<button class="btn-mmo vazio" style="--bc:var(--t3)">copiar o código Pix</button></div></div>';
-  else if (p.t === "Na fila")
+  else if (p.t === "No painel do fornecedor")
+    /* O LIMITE DE 10 MINUTOS vem do código dela (`lib/chat-status.ts`): o
+       painel pinta de VERDE nos 10 primeiros minutos depois do pagamento e
+       de VERMELHO depois — "Sem retorno do chinês". É o número que separa
+       "está andando" de "alguém precisa olhar", e o site não dizia isso em
+       lugar nenhum. Dito aqui, a pessoa sabe quando cobrar. */
     vez = '<div class="vez-cx deles"><div class="vez-t">&#9679; é a vez do fornecedor</div>' +
       '<h4>' + esc(fl.fornRot) + '</h4>' +
       '<p>' + esc(fl.fornD) + '. Prazo combinado: <b>' + esc(m.prazo) + '</b>. ' +
       'Você não precisa fazer nada agora — quando for a sua vez de novo, o sino avisa.</p>' +
+      '<div class="dep" style="margin-top:12px">' +
+      '<div class="dep-t">como a gente vigia este passo</div>' +
+      '<div class="dep-p"><span class="dp-n">&#9679;</span><span>' +
+      '<b>Até 10 minutos</b><i>é o normal: o pedido está no painel do ' +
+      'fornecedor e anda sozinho</i></span></div>' +
+      '<div class="dep-p"><span class="dp-n">&#9888;</span><span>' +
+      '<b>Passou de 10 minutos sem retorno</b><i>o pedido acende no painel da ' +
+      'Daoshi e uma pessoa vai atrás — você não precisa cobrar</i></span></div>' +
+      '</div>' +
       '<div class="vez-ac"><button class="btn-mmo vazio" data-tkav="1" style="--bc:var(--t3)">' +
       'avançar (só neste protótipo)</button></div></div>';
   else if (p.t === "Pede os dados")
@@ -8614,17 +8728,45 @@ function telaTicket(){
       '</div>' +
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--gold)">' +
       'ENVIAR</button></div></div>';
-  else if (p.t === "Anuncie no mercado")
-    /* corrigido por ela: é o CLIENTE que anuncia, para o fornecedor comprar */
+  else if (p.t === "Anuncie no mercado"){
+    /* corrigido por ela: é o CLIENTE que anuncia, para o fornecedor comprar.
+       E A DIVISÃO EM PARTES, que eu só descobri lendo o código dela:
+       o gold não vai num anúncio só. Ver `dividirGold` e o comentário lá. */
+    const qtdGold = (() => {
+      const l = pedidoDoTicket()[0] || {};
+      const m2 = String(l.rot || "").match(/([\d.]+)\s*(mil|k)?/i);
+      if (!m2) return 20000;
+      let n2 = parseFloat(m2[1].replace(/\./g, ""));
+      if (/mil|k/i.test(m2[2] || "")) n2 *= 1000;
+      return Math.max(1000, Math.round(n2));
+    })();
+    const comTaxa = goldComTaxa(qtdGold);
+    const partes = dividirGold(comTaxa);
+    const mil = n2 => n2.toLocaleString("pt-BR");
     vez = '<div class="vez-cx"><div class="vez-t">&#9679; é a sua vez</div>' +
       '<h4>Anuncie o gold no mercado do jogo</h4>' +
       '<p>Aqui é você que põe à venda: <b>anuncie o gold no mercado do MIR4</b> pelo ' +
       'valor combinado. É de lá que o nosso fornecedor compra — por isso a gente ' +
       'precisou do seu personagem e do servidor no passo anterior.</p>' +
-      '<div class="dica">Anuncie <b>exatamente</b> o valor combinado. Se anunciar ' +
+      (partes.length > 1
+        ? '<div class="gd-div"><div class="gd-t">são ' + partes.length +
+          ' anúncios, não um só</div>' +
+          '<div class="gd-l">' + partes.map((x, i) =>
+            '<span class="gd-p"><i>' + (i + 1) + '</i>' + mil(x) + '</span>').join("") +
+          '</div>' +
+          '<p class="gd-p2"><b>Por que dividido, e por que em valor quebrado:</b> ' +
+          'anúncio redondo e repetido chama atenção de quem fiscaliza o mercado do ' +
+          'jogo. Dividir em partes desiguais faz a venda parecer o que ela é — ' +
+          'gente negociando — e não uma máquina despejando gold. ' +
+          'A soma dá <b>' + mil(comTaxa) + '</b>, que já inclui a taxa do gold.</p>' +
+          '</div>'
+        : '<div class="dica">Anuncie <b>' + mil(comTaxa) + '</b> — este valor já ' +
+          'inclui a taxa do gold.</div>') +
+      '<div class="dica">Anuncie <b>exatamente</b> esses valores. Se anunciar ' +
       'diferente, o fornecedor não consegue comprar e o pedido para.</div>' +
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--gold)">' +
       'JÁ ANUNCIEI</button></div></div>';
+  }
   else if (p.t === "Print do anúncio")
     vez = '<div class="vez-cx"><div class="vez-t">&#9679; é a sua vez &middot; obrigatório</div>' +
       '<h4>Mande o print do anúncio</h4>' +
@@ -8753,6 +8895,32 @@ function telaTicket(){
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--gold)">' +
       'CONTINUAR</button></div></div>';
 
+  /* ====================================================================
+     TWD É ENTREGA MANUAL — e o site não sabia disso.
+
+     No código dela o TWD é **interceptado antes** de ir ao painel do
+     fornecedor, e há uma segunda checagem em `order-builder.ts` que estoura
+     se algum passar. O motivo está escrito no próprio componente de aviso
+     (`manual-twd-notice-bubble.tsx`):
+
+       "Esse pedido é de TWD — entregamos manualmente. A equipe vai te chamar
+        aqui no chat assim que puder. Mantenha essa página aberta."
+
+     Sem esse aviso, quem compra TWD fica esperando a automação que nunca vem
+     — e abre ticket perguntando por quê. O aviso custa uma caixa.
+     ==================================================================== */
+  const ehTwd = /twd/i.test(String(l0.rot || "")) ||
+                /twd/i.test(String(l0.gid || "")) ||
+                /\d[\d.,]*\s*TWD\b/i.test(String(l0.rot || ""));
+  const avisoTwd = !ehTwd ? "" :
+    '<div class="twd-cx"><div class="twd-t">&#8987; entrega manual</div>' +
+    '<p>Este pedido é de <b>TWD</b>, e TWD a gente entrega <b>na mão</b> — ' +
+    'não é automático. <b>A equipe te chama aqui no chat</b> assim que puder. ' +
+    'Pode deixar esta página aberta.</p>' +
+    '<p class="twd-p2">Não é atraso nem problema: TWD sempre foi assim, ' +
+    'porque exige alguém do outro lado conferindo. O que muda é que agora ' +
+    'está dito antes de você perguntar.</p></div>';
+
   const msgs = msgsDoTicket(fl, ps, tkPasso, l0);
 
   return '<div class="env"><button class="volta" data-tkvolta="1">&larr; meus pedidos</button>' +
@@ -8767,9 +8935,15 @@ function telaTicket(){
       (ehPedidoDeExemplo() ? ' <i style="color:var(--t3);font-style:normal">' +
         '&middot; exemplo</i>' : "") + '</div>' +
       '<h1>' + esc(g.nome) + '</h1></div>' +
+      /* o estado agora mostra o NOME DO PAINEL DELA quando existe
+         (`choosing_packs`, `filling_account`…), lido de lib/chat-status.ts —
+         para o site e o painel falarem a mesma língua */
       '<div class="tk-est"><span class="e">' + esc(p.t) + '</span>' +
-      '<span class="q">bandeira <code>' + esc(p.b) + '</code></span></div>' +
+      '<span class="q">' + (p.e ? 'estado <code>' + esc(p.e) + '</code>'
+                                : 'bandeira <code>' + esc(p.b) + '</code>') +
+      '</span></div>' +
     '</div>' +
+    avisoTwd +
 
     /* a esteira agora TRAVA: passo depois do primeiro obrigatório não cumprido
        fica com cadeado e não abre. É o que o bot dela já faz. */
