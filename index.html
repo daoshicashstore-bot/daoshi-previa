@@ -881,6 +881,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   padding-top:8px;border-top:1px solid var(--linha)}
 .cf-av b{color:var(--txt)}
 
+/* o recadinho que responde quando um botão ainda não faz nada */
+.rcd{position:fixed;left:16px;right:16px;bottom:64px;z-index:70;max-width:560px;
+  margin:0 auto;display:flex;gap:12px;align-items:flex-start;
+  border:1px solid var(--gold);background:color-mix(in srgb,var(--dark) 94%,transparent);
+  backdrop-filter:blur(8px);padding:12px 16px;font-size:13.5px;color:var(--t2);
+  line-height:1.55;opacity:0;transform:translateY(12px);pointer-events:none;
+  transition:opacity .2s,transform .2s}
+.rcd.on{opacity:1;transform:none;pointer-events:auto}
+.rcd b{color:var(--gold)}
+.rcd button{flex:none;color:var(--t3);font-size:17px;line-height:1;padding:0 4px}
+.rcd button:hover{color:var(--gold)}
+@media(prefers-reduced-motion:reduce){.rcd{transition:none}}
+
 /* a tela do Pix */
 .pix-cx{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;
   border:1px solid var(--linha2);background:var(--deep);padding:24px}
@@ -2959,6 +2972,8 @@ let busca = "";                          // o que a pessoa digitou na busca
 let anuncioAberto = null;                // "chave:indice" do anúncio aberto
 let vendedorAberto = null;               // perfil público de outra pessoa
 let mpJogo = null;                       // marketplace: jogo escolhido no fórum
+let mpFiltro = "";                       // marketplace: chip de filtro ativo
+let pgMetodo = 0;                        // pagamento: Pix / cartão / saldo
 /* OS TERMOS. `termoNa` guarda para onde ir DEPOIS de aceitar ("comprar" ou
    "anunciar"), porque o resumido é uma porta que a pessoa atravessa, não um
    destino. `aceites` é um por item, não um só — ela pediu item por item. */
@@ -3077,6 +3092,47 @@ function repinta(){
 }
 
 let pixAberto = null;                    // número do pedido na tela do Pix
+
+/* =====================================================================
+   LIMPAR AS TELAS SOBREPOSTAS — o conserto de uma classe inteira de bug
+
+   A Daoshi: "entrar na página de pix, tentar mudar de página e ficar na mesma
+   página do pix".
+
+   A causa é estrutural e vale para TODAS elas: o `render()` decide o que
+   mostrar numa corrente de `else if`, e as telas sobrepostas (Pix, documento,
+   termo, papel, anúncio, jogo, minigame, perfil de outro) são checadas ANTES
+   do `aba`. Quem está aberta ganha da aba escolhida — então clicar em "Games"
+   com o Pix aberto continua mostrando o Pix.
+
+   Cada clique de navegação limpava as sobreposições NA MÃO, e cada tela nova
+   que eu criei entrou na corrente sem entrar nessas listas. Foi assim com o
+   Pix, e teria sido assim com a próxima.
+
+   Agora é UMA função. Toda navegação chama ela, e tela nova só precisa ser
+   acrescentada aqui — num lugar só.
+   ===================================================================== */
+/* um recado curto no rodapé da tela, que some sozinho. Serve para o site
+   responder alguma coisa em vez de ficar mudo. */
+function recadinho(html){
+  let c = document.getElementById("recadinho");
+  if (!c){
+    c = document.createElement("div");
+    c.id = "recadinho"; c.className = "rcd";
+    document.body.appendChild(c);
+  }
+  c.innerHTML = '<span>' + html + '</span>' +
+    '<button aria-label="fechar" onclick="this.parentNode.classList.remove(\'on\')">&times;</button>';
+  c.classList.add("on");
+  clearTimeout(window.__rcd);
+  window.__rcd = setTimeout(() => c.classList.remove("on"), 5200);
+}
+
+function limparTelas(){
+  jogoAberto = null; docAberto = null; papelAberto = null;
+  anuncioAberto = null; vendedorAberto = null; mgAberto = null;
+  pixAberto = null; termoNa = null;
+}
 let cupomUsado = "";                     // cupom digitado no carrinho
 let orgEscolha = 0;                      // organização: para onde vai o cashback
 let termoNa = null;                      // null | "comprar" | "anunciar" | "ler"
@@ -4368,8 +4424,7 @@ function pintaConta(){
     e.stopPropagation();
     document.getElementById("mconta").classList.remove("on");
     const v = b.dataset.mcir;
-    jogoAberto = null; docAberto = null; papelAberto = null;
-    anuncioAberto = null; vendedorAberto = null;
+    limparTelas();
     if (v === "conquistas"){ aba = "conquistas"; }
     /* telas próprias, não subabas do perfil */
     else if (v === "afiliado" || v === "orgs"){ aba = v; }
@@ -4894,7 +4949,7 @@ function ligaGaveta(){
     if (aba === "carrinho" || aba === "pagar") render();
   });
   document.querySelectorAll("[data-gvir]").forEach(b => b.onclick = () => {
-    fechaGaveta(); aba = b.dataset.gvir; jogoAberto = null; docAberto = null;
+    fechaGaveta(); limparTelas(); aba = b.dataset.gvir;
     render(); window.scrollTo(0,0);
   });
 }
@@ -5589,7 +5644,18 @@ function telaAnuncios(){
   const jogosMp = Array.from(new Set(lista.map(a => a.g)));
   const jogoAtivo = mpJogo && jogosMp.indexOf(mpJogo) >= 0 ? mpJogo : jogosMp[0];
   const F = filtrosDoJogo(jogoAtivo);
-  const doJogo = lista.filter(a => a.g === jogoAtivo);
+  /* o filtro escolhido bate contra a classe do anúncio, as etiquetas e o
+     título — que é onde a informação está espalhada hoje */
+  const doJogo = lista.filter(a => {
+    if (a.g !== jogoAtivo) return false;
+    if (!mpFiltro) return true;
+    const f = mpFiltro.toLowerCase();
+    const cls = (F.classes[a.n.length % Math.max(1, F.classes.length)] || [""])[0];
+    return cls.toLowerCase() === f ||
+           (a.tags || []).some(t => String(t).toLowerCase().indexOf(f) >= 0) ||
+           String(a.n).toLowerCase().indexOf(f) >= 0 ||
+           (a.at || []).some(x => String(x[1]).toLowerCase().indexOf(f) >= 0);
+  });
 
   /* as fotos: uso as capas dos jogos como recheio, porque print de conta de
      verdade é dado de cliente e não entra num protótipo que fica no ar */
@@ -5626,11 +5692,18 @@ function telaAnuncios(){
         (ic ? '<img class="mpc-ic" src="' + ic + '" alt="">' : '<i></i>') +
         esc(j) + '</button>'; }).join("") + '</div>' +
     /* linha 2: os filtros daquele jogo */
+    /* OS CHIPS AGORA FILTRAM DE VERDADE.
+       O varredor de armadilhas achou 9 botões mortos só nesta tela — e eram
+       justamente estes. Filtro que não filtra é pior que filtro nenhum: a
+       pessoa clica, nada muda, e conclui que o site está quebrado. */
     '<div class="mp-chips">' +
-      '<button class="mpc on" style="--cc:var(--gold)">Todos</button>' +
-      F.classes.map(c => '<button class="mpc" style="--cc:' + c[1] + '"><i></i>' +
+      '<button class="mpc ' + (mpFiltro ? "" : "on") + '" style="--cc:var(--gold)" ' +
+      'data-mpf="">Todos</button>' +
+      F.classes.map(c => '<button class="mpc' + (mpFiltro === c[0] ? " on" : "") +
+        '" style="--cc:' + c[1] + '" data-mpf="' + esc(c[0]) + '"><i></i>' +
         esc(c[0]) + '</button>').join("") +
-      F.extras.map(e => '<button class="mpc" style="--cc:var(--light)">' +
+      F.extras.map(e => '<button class="mpc' + (mpFiltro === e ? " on" : "") +
+        '" style="--cc:var(--light)" data-mpf="' + esc(e) + '">' +
         esc(e) + '</button>').join("") +
       '<button class="mpc sugerir" data-sugfiltro="' + esc(jogoAtivo) + '">' +
       '&#10010; sugerir filtro</button>' +
@@ -6389,14 +6462,22 @@ function telaPagar(){
 
     '<div class="passo"><div class="cabp"><span class="n">2</span>' +
     '<span class="tp">Como pagar</span></div><div class="corpo">' +
+    /* os três eram desenho: nenhum clicável, e "Pix" ficava sempre aceso */
     '<div class="pgs">' +
-      '<button class="pg on"><span class="pg-i">◈</span><span class="pg-n">Pix</span>' +
-      '<span class="pg-d">cai na hora · sem taxa</span></button>' +
-      '<button class="pg"><span class="pg-i">▤</span><span class="pg-n">Cartão</span>' +
-      '<span class="pg-d">sujeito a estorno · em avaliação</span></button>' +
-      '<button class="pg"><span class="pg-i">★</span><span class="pg-n">Saldo Daoshi</span>' +
-      '<span class="pg-d">' + brl(D.cashback.saldo) + ' disponível</span></button>' +
-    '</div></div></div>' +
+      [["◈", "Pix", "cai na hora · sem taxa"],
+       ["▤", "Cartão", "sujeito a estorno · em avaliação"],
+       ["★", "Saldo Daoshi", brl(D.cashback.saldo) + " disponível"]].map((m, i) =>
+        '<button class="pg' + (i === pgMetodo ? " on" : "") + '" data-pgm="' + i + '">' +
+        '<span class="pg-i">' + m[0] + '</span><span class="pg-n">' + esc(m[1]) + '</span>' +
+        '<span class="pg-d">' + m[2] + '</span></button>').join("") +
+    '</div>' +
+    (pgMetodo === 1
+      ? '<div class="dica">Cartão ainda está <b>em avaliação</b> por causa do estorno. ' +
+        'Quando entrar, o risco é da casa — não do vendedor.</div>'
+      : pgMetodo === 2
+      ? '<div class="dica">Vai sair do seu saldo de <b>' + brl(D.cashback.saldo) +
+        '</b>. Se não cobrir tudo, o resto vai no Pix.</div>' : "") +
+    '</div></div>' +
 
     '<div class="passo"><div class="cabp"><span class="n">3</span>' +
     '<span class="tp">Onde entregar cada item</span>' +
@@ -8934,9 +9015,34 @@ function render(){
   if (homeAqui()) pintaHome();
   else document.getElementById("home").innerHTML = "";
 
+  /* ---------------------------------------------------------------
+     NENHUM BOTÃO FICA CALADO.
+
+     O varredor de armadilhas achou 16 telas com botão que existe, deixa
+     clicar e não faz nada. Botão mudo é pior que botão ausente: a pessoa
+     clica, não acontece nada, e conclui que o site está quebrado — foi o que
+     a Daoshi viu.
+
+     Caçar um por um não resolve, porque a cada tela nova nasce outro. Então
+     no fim do render, todo botão que ainda não tem dono ganha uma resposta
+     honesta: "isto é maquete, aqui é o que vai acontecer". É melhor dizer
+     que não faz do que fingir que faz.
+     --------------------------------------------------------------- */
+  setTimeout(() => {
+    document.querySelectorAll("#corpo button").forEach(b => {
+      if (b.onclick || b.dataset.mudo) return;
+      b.dataset.mudo = "1";
+      b.onclick = () => {
+        const rot = (b.innerText || "").trim().split("\n")[0].slice(0, 40) || "isso";
+        recadinho("<b>“" + esc(rot) + "”</b> ainda não funciona nesta maquete — " +
+          "ela mostra o caminho, mas não faz de verdade. " +
+          "No site final este botão faz o que promete.");
+      };
+    });
+  }, 0);
+
   document.querySelectorAll("[data-aba]").forEach(b =>
-    b.onclick = () => { aba = b.dataset.aba; jogoAberto = null; docAberto = null;
-                        papelAberto = null; anuncioAberto = null; vendedorAberto = null;
+    b.onclick = () => { limparTelas(); aba = b.dataset.aba;
                         render(); window.scrollTo(0,0); });
   document.querySelectorAll("[data-jogo]").forEach(b =>
     b.onclick = () => { jogoAberto = b.dataset.jogo;
@@ -8981,7 +9087,16 @@ function render(){
   document.querySelectorAll("[data-anfecha]").forEach(b =>
     b.onclick = () => { anuncioAberto = null; render(); window.scrollTo(0,0); });
   document.querySelectorAll("[data-mpjogo]").forEach(b =>
-    b.onclick = () => { mpJogo = b.dataset.mpjogo; render(); });
+    b.onclick = () => { mpJogo = b.dataset.mpjogo; mpFiltro = ""; render(); });
+  /* os chips de filtro: clicar no mesmo tira o filtro */
+  document.querySelectorAll("[data-mpf]").forEach(b =>
+    b.onclick = () => { const v = b.dataset.mpf;
+                        mpFiltro = (mpFiltro === v) ? "" : v;
+                        const y = window.scrollY; render(); window.scrollTo(0, y); });
+  /* a forma de pagamento: eram três botões desenhados e nenhum clicável */
+  document.querySelectorAll("[data-pgm]").forEach(b =>
+    b.onclick = () => { pgMetodo = +b.dataset.pgm;
+                        const y = window.scrollY; render(); window.scrollTo(0, y); });
   /* a ideia dela: o cliente sugere um filtro que não existe, entra em análise
      e vira filtro oficial. A lista cresce com quem usa. */
   document.querySelectorAll("[data-sugfiltro]").forEach(b =>
@@ -9124,7 +9239,7 @@ function render(){
   document.querySelectorAll("[data-rod]").forEach(b =>
     b.onclick = () => {
       const [k, v] = b.dataset.rod.split(":");
-      docAberto = null; papelAberto = null;
+      limparTelas();
       if (k === "porta"){ porta = v; aba = ABAS[porta][0][0]; gcJogo = null; jogoAberto = null; }
       else if (k === "perfil"){
         if (v === "perfil"){ aba = "perfil"; perfilAba = "pedidos"; }
@@ -9490,8 +9605,8 @@ function pintaHome(){
    também precisa entrar. */
 function entrar(qual, opc){
   opc = opc || {};
+  limparTelas();
   porta = qual; aba = ABAS[porta][0][0];
-  jogoAberto = null; anuncioAberto = null; docAberto = null; termoNa = null;
   busca = "";
   if (opc.jogo){ aba = "games"; jogoAberto = opc.jogo; metodo = 0; item = -1; }
   if (opc.busca){ aba = "games"; busca = opc.busca; }
