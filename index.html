@@ -859,6 +859,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .explica b{color:var(--txt)}
 
 .campos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* o score de confiança */
+.cf{border:1px solid var(--cc);background:color-mix(in srgb,var(--cc) 8%,var(--deep));
+  padding:12px 16px;margin-top:12px;text-align:left}
+.cf-topo{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center}
+.cf-n{font-size:34px;font-weight:800;color:var(--cc);line-height:1;
+  font-variant-numeric:tabular-nums}
+.cf-c{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cf-c b{font-size:13.5px;color:var(--cc);text-transform:capitalize}
+.cf-c i{font-style:normal;font-size:11px;color:var(--t3);line-height:1.4}
+.cf-bar{grid-column:1/-1;height:4px;background:var(--medium);margin-top:8px;display:block}
+.cf-bar b{display:block;height:100%;background:var(--cc)}
+.cf-lista{margin-top:12px;padding-top:12px;border-top:1px solid var(--linha)}
+.cf-l{display:flex;justify-content:space-between;gap:12px;font-size:12px;
+  color:var(--t2);padding:4px 0}
+.cf-l i{font-style:normal;font-family:var(--mono);color:var(--t3);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.cf-l.ok i{color:var(--verde)}
+.cf-l.ruim{color:var(--magenta)} .cf-l.ruim i{color:var(--magenta)}
+.cf-av{font-size:12px;color:var(--t3);line-height:1.55;margin-top:12px;
+  padding-top:8px;border-top:1px solid var(--linha)}
+.cf-av b{color:var(--txt)}
+
 /* a tela do Pix */
 .pix-cx{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;
   border:1px solid var(--linha2);background:var(--deep);padding:24px}
@@ -3536,6 +3558,77 @@ function vendasDoJogo(g, mets){
   return n;
 }
 
+/* =====================================================================
+   O SCORE DE CONFIANÇA
+
+   Veio de fora como sugestão, mas é a TESE DELA virando número: "na Daoshi
+   você constrói reputação desde a sua compra — e para vender depois é muito
+   mais fácil". O score é isso, visível no anúncio.
+
+   Sete fatores, e dois deles são o pulo do gato:
+
+     COMPRAS NA STORE — quem compra recarga aqui há dois anos já é gente
+     conhecida antes de vender a primeira coisa. NENHUM concorrente pode
+     copiar isso, porque nenhum deles tem loja própria. É literalmente o
+     ciclo compra -> ficha -> vende, contado em pontos.
+
+     TEMPO DE POSSE da conta anunciada — quem anuncia o que acabou de comprar
+     é o padrão de quem revende conta roubada.
+
+   E um que anda PARA TRÁS: taxa de disputa. Sem um fator negativo, score vira
+   medalha de participação.
+
+   CUIDADO QUE VAI ESCRITO NA TELA: score alto não dispensa a conferência de
+   2 horas. Golpista paciente constrói score — ele serve para ESCOLHER com quem
+   negociar, não para relaxar a regra.
+   ===================================================================== */
+const FATORES = [
+  ["tempo de casa",        18, v => Math.min(1, v.meses / 12)],
+  ["vendas concluídas",    20, v => Math.min(1, v.vendas / 40)],
+  ["compras na Store",     16, v => Math.min(1, v.compras / 25)],
+  ["entregas no prazo",    14, v => v.prazo],
+  ["identidade verificada",12, v => v.kyc ? 1 : 0],
+  ["valor movimentado",    10, v => Math.min(1, v.volume / 20000)],
+  ["tempo com a conta",    10, v => Math.min(1, v.posse / 90)],
+];
+function scoreDe(v){
+  let n = 0;
+  const detalhe = FATORES.map(f => {
+    const p = Math.max(0, Math.min(1, f[2](v)));
+    n += p * f[1];
+    return {rot: f[0], peso: f[1], ganho: Math.round(p * f[1]), cheio: p >= 0.999};
+  });
+  /* o único que tira: disputa. 1 em 10 já derruba um terço. */
+  const castigo = Math.round(Math.min(40, (v.disputas / Math.max(1, v.vendas)) * 320));
+  n = Math.max(0, Math.round(n) - castigo);
+  const faixa = n >= 80 ? ["alto", "var(--verde)"]
+              : n >= 55 ? ["médio", "var(--gold)"]
+              : n >= 30 ? ["baixo", "var(--laranja)"]
+              :           ["novo por aqui", "var(--t3)"];
+  return {n: n, faixa: faixa[0], cor: faixa[1], detalhe: detalhe, castigo: castigo};
+}
+function selaConfianca(v, aberto){
+  const s = scoreDe(v);
+  return '<div class="cf" style="--cc:' + s.cor + '">' +
+    '<div class="cf-topo"><span class="cf-n">' + s.n + '</span>' +
+    '<span class="cf-c"><b>confiança ' + esc(s.faixa) + '</b>' +
+    '<i>calculado, não é nota que alguém deu</i></span>' +
+    '<span class="cf-bar"><b style="width:' + s.n + '%"></b></span></div>' +
+    (aberto
+      ? '<div class="cf-lista">' + s.detalhe.map(d =>
+          '<div class="cf-l' + (d.cheio ? " ok" : "") + '">' +
+          '<span>' + esc(d.rot) + '</span>' +
+          '<i>' + d.ganho + '/' + d.peso + '</i></div>').join("") +
+        (s.castigo
+          ? '<div class="cf-l ruim"><span>disputas abertas contra ele</span>' +
+            '<i>−' + s.castigo + '</i></div>' : "") +
+        '<div class="cf-av">Score alto <b>não dispensa a conferência de 2 horas</b>. ' +
+        'Ele serve para você escolher com quem negocia — não para confiar sem olhar.</div>' +
+        '</div>'
+      : "") +
+    '</div>';
+}
+
 function grupos(m){
   const ordem = [], por = {};
   (m.itens || []).forEach((x, i) => {
@@ -5793,6 +5886,10 @@ function telaAnuncio(){
           String(v.rep).replace(".", ",") + '</span><small>de 5 em ' + v.neg + ' avaliações</small></div>' +
           '<div class="rk"><span>' + esc(v.resp) + '</span><small>tempo médio de resposta</small></div>' +
         '</div>' +
+        /* o SCORE, aberto, dentro do anúncio — é aqui que a pessoa decide se
+           confia o suficiente para pagar */
+        selaConfianca({meses: 14, vendas: v.neg || 0, compras: 31, prazo: 0.94,
+                       kyc: true, volume: 18400, posse: 210, disputas: 1}, true) +
         '<div class="marcas" style="margin-top:12px;justify-content:center">' +
         '<span class="marca ok">CPF verificado</span>' +
         '<span class="marca dc">Discord vinculado</span>' +
