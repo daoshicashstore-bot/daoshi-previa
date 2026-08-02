@@ -4897,8 +4897,29 @@ function fluxoDe(m){
      precisa achar o anúncio no mercado do jogo — e para isso precisa saber DE
      QUEM. Foi exatamente o que ela reclamou: "não pediu server nem nada".
      Personagem e servidor, e NENHUMA senha: no gold ninguém entra na conta. */
+  /* ====================================================================
+     O QUE O GOLD PEDE — corrigido em 02/08 lendo o Firebase, não deduzindo.
+
+     Eu tinha escrito aqui `["Nome do personagem", "Servidor"]`. A Daoshi:
+     "não sabe que gold não precisa de nickname?". Fui ler:
+
+       · `fluxo/mir4gold` tem **campos: []** e **conta: ''** — o gold não
+         passa pelo credentialsSchema de jeito nenhum
+       · o `credentialsSchema` mora no JOGO (mir4) e serve ao Top Up:
+         login, senha, servidor, nickname, método de login
+       · e o "gold" nem é jogo — é um **produto dentro do mir4**, com
+         engine `mir4_gold_brackets`
+
+     Faz sentido com o fluxo que ela descreveu: no gold **quem anuncia é o
+     cliente**, no mercado do jogo. Ninguém loga na conta dele. Então login,
+     senha e nickname não têm o que fazer aqui.
+
+     Sobra UMA coisa, e ela mesma cobrou quando eu não pedia:
+     "comprei 20k de gold, não pediu server nem nada" — o **servidor**, para
+     o fornecedor procurar o anúncio no mercado certo.
+     ==================================================================== */
   if (m.gid === "mir4gold" && (!f.campos || !f.campos.length)){
-    f.campos = ["Nome do personagem", "Servidor"];
+    f.campos = ["Servidor"];
     f.contaRot = "mercado do jogo";
     f.print = true;
   }
@@ -5126,14 +5147,16 @@ function telaGames(){
           '</span></button>'; }).join("") + '</div>'; }).join("")) +
 
       /* O TÍTULO TEM QUE BATER COM OS CAMPOS.
-         No Gold do MIR4 os campos são "Nome do personagem" e "Servidor" — e o
-         título dizia "Informe o login do jogo". A Daoshi foi taxativa nisso:
-         "comprei 20k de gold, não pediu server nem nada, falou que ia logar
-         minha conta". Eu tinha consertado os CAMPOS e deixado o título velho
-         mentindo em cima deles, que é o mesmo erro com outra roupa. */
+         Já errei duas vezes aqui. Primeiro dizia "Informe o login do jogo"
+         em cima de campos que não eram login. Depois virou "dados do
+         personagem" — mas o gold não pede personagem nenhum, só o servidor
+         (lido do Firebase em 02/08). Agora o título sai DOS PRÓPRIOS CAMPOS,
+         que é a única forma de ele não voltar a mentir. */
       passo(2, porUid ? "Informe o seu UID"
-                      : (fl.gid === "mir4gold" || !/senha/i.test(fl.conta || "")
-                         ? "Informe os dados do personagem"
+                      : (fl.gid === "mir4gold"
+                         ? "Em que servidor você joga"
+                         : !/senha/i.test(fl.conta || "")
+                         ? "Informe os dados da conta"
                          : "Informe o login do jogo"),
         fl.campos.length + (fl.campos.length === 1 ? " campo" : " campos"),
         /* CAMPOS DE VERDADE. Eram <span> com texto de exemplo — dava para ler
@@ -5145,9 +5168,13 @@ function telaGames(){
           ? fl.campos.map(cc => {
               const ch = "jogo:" + g.ch + ":" + m.gid + ":" + cc;
               const b = cc.toLowerCase();
-              if (/servidor|server/.test(b))
-                return campoReal(ch, cc, "", "texto",
-                  ["Servidor 1", "Servidor 2", "Servidor 3", "SP", "NA", "EU", "SA"]);
+              /* ⚠ A TERCEIRA CÓPIA DA LISTA INVENTADA DE SERVIDORES.
+                 Consertei duas e esta ficou — só apareceu porque escrevi um
+                 teste que varre TODOS os jogos e TODOS os métodos
+                 (`conferir-campos-com-firebase.py`) em vez de olhar uma tela.
+                 Lição: valor errado copiado em três lugares não se conserta
+                 lendo o código, se conserta varrendo a tela.
+                 No `credentialsSchema` dela o servidor é `type: "text"`. */
               if (/m[ée]todo de login|login method/.test(b))
                 return campoReal(ch, cc, "", "texto",
                   ["E-mail e senha", "Google", "Facebook", "Apple", "Steam"]);
@@ -7961,9 +7988,18 @@ function telaDados(){
               const ch = "jogo:" + b.ch + ":" + b.gid + ":" + c;
               const s = ehSenha(c);
               const cl = c.toLowerCase();
-              if (/servidor|server/.test(cl))
-                return campoReal(ch, c, "", "texto",
-                  ["Servidor 1", "Servidor 2", "Servidor 3", "SP", "NA", "EU", "SA"]);
+              /* ⚠ O SERVIDOR É CAMPO DE TEXTO, NÃO LISTA.
+                 Eu tinha posto aqui uma caixa de seleção com
+                 ["Servidor 1","Servidor 2","SP","NA","EU","SA"] — valores que
+                 EU INVENTEI. A Daoshi: "voce tem acesso ao github e firebase e
+                 tickets e clientes, e ainda assim, não sabe nem os servidores
+                 de gold".
+                 Fui ler o `credentialsSchema` do gameRegistry dela:
+                     server · label "Servidor" · type "text" · required true
+                 É TEXTO. Não existe lista de servidores no registro, e ela
+                 varia por jogo e por temporada. Lista inventada é pior que
+                 campo aberto: a pessoa não acha o servidor dela e desiste, ou
+                 escolhe o errado e o pedido trava. */
               return campoReal(ch, c,
                 s ? "a senha da conta do jogo" :
                 /uid/.test(cl) ? "seu número no jogo" :
@@ -8453,8 +8489,10 @@ function passoCumprido(p, fl, g){
     const cs = (fl.campos || []);
     if (!cs.length) return true;
     return cs.every(c => {
+      /* o gold guarda em `gold:servidor` porque é o único campo dele — o
+         "gold:personagem" saiu junto com o campo, em 02/08 */
       const ch = (fl.gid === "mir4gold")
-        ? "gold:" + (/servidor/i.test(c) ? "servidor" : "personagem")
+        ? "gold:servidor"
         : "jogo:" + (g ? g.ch : "") + ":" + fl.gid + ":" + c;
       return String(campo(ch, "")).trim().length > 0;
     });
@@ -8716,16 +8754,25 @@ function telaTicket(){
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--gold)">' +
       'ENVIAR O CÓDIGO</button></div></div>';
   else if (p.t === "Dados do personagem")
+    /* SÓ O SERVIDOR. Aqui eu pedia "Nome do personagem" e oferecia uma caixa
+       de seleção com ["SA (América do Sul)", "NA", "EU", "ASIA"] — a segunda
+       lista de servidores que eu inventei no mesmo site.
+       A Daoshi: "não sabe nem os servidores de gold e não sabe que gold não
+       precisa de nickname?".
+       No registro dela o servidor é `type: "text"`, e no gold quem anuncia é
+       o cliente — então nome de personagem não serve para nada: o fornecedor
+       acha o anúncio pelo mercado do servidor, e o print confirma qual é. */
     vez = '<div class="vez-cx"><div class="vez-t">&#9679; é a sua vez &middot; obrigatório</div>' +
-      '<h4>Quem é você dentro do jogo</h4>' +
+      '<h4>Em que servidor você joga</h4>' +
       '<p>No gold <b>ninguém entra na sua conta</b> — nem a Daoshi, nem fornecedor ' +
-      'nenhum. A gente só precisa saber <b>onde te achar no mercado do jogo</b>: ' +
-      'o nome do personagem e o servidor. <b>Nunca vamos pedir a sua senha aqui.</b></p>' +
+      'nenhum. A gente só precisa do <b>servidor</b>, para o fornecedor procurar o ' +
+      'seu anúncio no mercado certo. <b>Nem senha, nem nickname, nem login.</b></p>' +
       '<div class="campos" style="margin-top:12px">' +
-        campoReal("gold:personagem", "Nome do personagem", "como você aparece no jogo") +
-        campoReal("gold:servidor", "Servidor", "", "texto",
-                  ["SA (América do Sul)", "NA", "EU", "ASIA"]) +
+        campoReal("gold:servidor", "Servidor",
+                  "escreva como aparece no jogo") +
       '</div>' +
+      '<div class="seguro">Escreva do jeito que está no jogo. Se estiver ' +
+      'diferente, o fornecedor procura no mercado errado e o pedido para.</div>' +
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--gold)">' +
       'ENVIAR</button></div></div>';
   else if (p.t === "Anuncie no mercado"){
