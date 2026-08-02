@@ -672,6 +672,28 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   border-bottom:1px solid var(--linha2);backdrop-filter:blur(9px)}
 /* gap menor: com o seletor de tema no cabeçalho, 24px cortava a última aba */
 .topo .env{display:flex;align-items:center;gap:12px;height:62px;max-width:1400px}
+/* =====================================================================
+   O CABEÇALHO TEM QUE CABER — medido, não estimado
+
+   Em 900px "Criptomoedas" passava POR CIMA do "Suporte 24/7". A barra de
+   abas até rola, mas quando não sobra largura nenhuma para ela, os vizinhos
+   é que são empurrados um sobre o outro.
+
+   Então some com o que é redundante, na ordem em que faz menos falta:
+
+     ≤1200px  a busca do cabeçalho sai — a vitrine tem a busca grande dela,
+              e é para lá que a pessoa vai de qualquer jeito
+     ≤1000px  os três botões de tema saem (é ferramenta minha para ela
+              escolher a paleta, não coisa de cliente) e o STAFF também
+     ≤820px   o "Suporte 24/7" vira só o pontinho verde, que é o que ele
+              precisa dizer: tem gente online
+
+   Nada some sem ter outro caminho: busca, tema e staff continuam no menu da
+   conta e no rodapé.
+   ===================================================================== */
+@media(max-width:1300px){.topo .tbusca{display:none}}
+@media(max-width:1150px){.topo .temas,.topo .staff{display:none}}
+@media(max-width:1000px){.sup247 .s-tx{display:none}.sup247{padding:8px 10px}}
 .logo{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;
   letter-spacing:.2em;text-transform:uppercase;font-weight:700;flex:none}
 .logo .q{width:24px;height:24px;background:var(--gold);color:var(--dark);display:grid;
@@ -687,7 +709,26 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   clip:rect(0 0 0 0);white-space:nowrap}
 @media(max-width:900px){.logo.com-arte .logo-img img{height:34px}}
 /* sem barra de rolagem feia na barra de abas */
-.abas{display:flex;gap:2px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+/* AS ABAS NÃO PODEM ENCOSTAR NO VIZINHO.
+
+   Com os ícones, as três abas passaram a precisar de ~340px e a barra só
+   tinha 281 — então "Criptomoedas" transbordava e ia parar por cima do
+   "Suporte 24/7". Medido em `achar-sobreposicao.py`, não estimado.
+
+   `flex:1 1 auto` + `min-width:0` faz a barra ceder espaço, e o
+   `overflow:hidden` garante que, se ainda faltar, ela CORTA em vez de
+   deixar a aba pintar fora. Quem cede espaço primeiro é a busca do
+   cabeçalho, logo abaixo — ela é a peça mais dispensável das duas. */
+   MEDIDO: em 1440px a barra recebia 297px e precisava de 352. A aba
+   "Criptomoedas" era CORTADA — o pedaço de fora não aparecia (a barra
+   recorta), mas a palavra ficava pela metade, que é exatamente o "sem comer
+   palavras" que ela pediu.
+
+   `flex:0 0 auto` na barra: ela nunca encolhe, sempre mostra as três abas
+   inteiras. Quem cede é a busca do cabeçalho (`flex:1 1 120px`), que tem
+   uma gêmea grande na vitrine logo abaixo. */
+.abas{display:flex;gap:2px;flex:0 0 auto;min-width:0;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
 .abas::-webkit-scrollbar{display:none}
 .eu{cursor:pointer}
 .eu:hover{border-color:var(--gold)}
@@ -1012,7 +1053,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .cf-av b{color:var(--txt)}
 
 /* a busca no cabeçalho e o suporte 24/7 */
-.tbusca{display:flex;align-items:center;gap:8px;flex:1;min-width:0;max-width:420px;
+/* a busca do cabeçalho ENCOLHE ANTES das abas: ela tem uma gêmea grande na
+   vitrine, as abas não têm substituta */
+.tbusca{display:flex;align-items:center;gap:8px;flex:1 1 120px;min-width:96px;max-width:420px;
   border:1px solid var(--linha2);background:var(--dark);padding:0 12px;
   transition:border-color .16s}
 .tbusca:focus-within{border-color:var(--gold)}
@@ -3388,7 +3431,7 @@ a.rod-l:hover{color:var(--rc)}
          não dizia. 3 dos 5 concorrentes lidos põem isso no topo. -->
     <a class="sup247" href="https://discord.gg/daoshi" target="_blank" rel="noopener"
        title="a gente responde em minutos, não em dias">
-      <span class="s-pt"></span>Suporte 24/7</a>
+      <span class="s-pt"></span><span class="s-tx">Suporte 24/7</span></a>
     <button class="carr" id="btCarr" title="carrinho">
       <span class="cr-ic">▤</span><span class="cr-n2" id="carrN">0</span></button>
     <!-- Três temas para ela comparar. Eu já errei a paleta duas vezes
@@ -3481,9 +3524,24 @@ const PORTAS = {
 /* "Meus pedidos" saiu daqui: com ele a barra estourava e ganhava barra de
    rolagem. Ele agora mora dentro do PERFIL, junto com chat, suporte e ajuda -
    que e onde a pessoa procura essas coisas de qualquer jeito. */
+/* ⚠ TRÊS ABAS NA STORE, NÃO SEIS.
+
+   Ela, em 02/08: "há alguns botões cobrindo uns aos outros" e "faça as coisas
+   sincronizadas, centralizadas, sem comer palavras".
+
+   Fui MEDIR (coleta/achar-sobreposicao.py) e deu **162 problemas**: em 1280px
+   "Criptomoedas" virava "Cript", e as abas passavam POR CIMA do Suporte 24/7,
+   do carrinho e do STAFF. Não era detalhe de estilo — era item demais para a
+   largura, e o navegador empilhando um em cima do outro.
+
+   O desenho que ela mandou tem **três**: Games, Giftcards, Criptomoedas. Os
+   outros três que eu tinha posto aqui são de OUTRA PORTA e continuam
+   alcançáveis onde já estavam:
+     · Gamecoin e Marketplace  → são portas; entram pelo logo e pelo rodapé
+     · Blog                    → menu da conta e rodapé
+   Cabeçalho é para a porta onde a pessoa está, não para o site inteiro. */
 const ABAS = {
-  store:    [["games","Games"],["giftcards","Giftcards"],["cripto","Criptomoedas"],
-             ["gcoin","Gamecoin"],["contas","Contas anunciadas"],["comunidade","Blog"]],
+  store:    [["games","Games"],["giftcards","Giftcards"],["cripto","Criptomoedas"]],
   gamecoin: [["mercado","Mercado"],["encomenda","Encomendas"],["vendedores","Vendedores"],
              ["vender","Quero vender"]],
   market:   [["contas","Contas"],["reroll","Contas reroll"],["servicos","Serviços"],
@@ -6047,7 +6105,14 @@ function ligaGaveta(){
     if (aba === "carrinho" || aba === "pagar") render();
   });
   document.querySelectorAll("[data-gvir]").forEach(b => b.onclick = () => {
-    fechaGaveta(); limparTelas(); aba = b.dataset.gvir;
+    fechaGaveta(); limparTelas();
+    let ir = b.dataset.gvir;
+    /* o atalho "pagar" da gaveta pulava os dados. Em vez de bater na tela de
+       "falta preencher", levo direto para onde a pessoa resolve — a parede
+       existe para quem chegou por um caminho torto, não para o atalho de
+       casa. */
+    if (ir === "pagar" && faltaPreencher().length) ir = "dados";
+    aba = ir;
     render(); window.scrollTo(0,0);
   });
 }
@@ -8001,6 +8066,42 @@ function checkoutVazio(qual){
 
 function telaPagar(){
   if (!carrinho.length) return checkoutVazio("Pagamento");
+
+  /* ====================================================================
+     A TRAVA ESTAVA NA PORTA, NÃO NO COFRE.
+
+     Ela, em 02/08: "eu ainda consigo selecionar um pack e seguir o pedido,
+     sem exigir as coisas que precisam".
+
+     Estava certa. O botão "IR PARA O PAGAMENTO" nascia desabilitado quando
+     faltava dado — mas quem chegasse a esta tela por QUALQUER outro caminho
+     encontrava o "GERAR PIX" solto, e ele criava o pedido sem conferir nada.
+     Guardar a porta e deixar o cofre aberto não guarda coisa nenhuma.
+
+     Agora a conferência é DA TELA: se falta alguma coisa, ela nem monta o
+     pagamento — mostra o que falta e leva de volta. E o próprio botão de
+     gerar o Pix confere de novo antes de criar (ver o handler).
+     ==================================================================== */
+  const falta = faltaPreencher();
+  if (falta.length)
+    return '<div class="env">' + trilhaCo(1) +
+      '<div class="painel" style="margin-top:14px"><span class="cant2 tr"></span>' +
+      '<span class="cant2 bl"></span>' +
+      '<div class="placa"><span class="pt2">falta preencher antes de pagar</span>' +
+      '<span class="orn"></span><span class="dir2">' + falta.length +
+      (falta.length === 1 ? " item" : " itens") + '</span></div>' +
+      '<div style="padding:16px">' +
+      mascoteFala("O pagamento só libera depois dos dados — e é <b>de " +
+        "propósito</b>. Pedido pago sem login trava do outro lado, e aí você " +
+        "fica esperando por um motivo que dava para evitar aqui.", 84) +
+      '<div class="dep" style="margin-top:12px">' +
+      '<div class="dep-t">o que ainda falta</div>' +
+      falta.map((f, i) => '<div class="dep-p"><span class="dp-n">' + (i+1) +
+        '</span><span><b>' + esc(f) + '</b></span></div>').join("") + '</div>' +
+      '<button class="btn-mmo" style="--bc:var(--gold);margin-top:14px" ' +
+      'data-vaidados="1">Preencher agora</button>' +
+      '</div></div></div>';
+
   const tot = totalCarrinho() * D.usd;
   const cb = cashbackCarrinho();
   return '<div class="env">' + placa("Pagamento", "preço travado") +
@@ -12126,9 +12227,24 @@ function render(){
       render(); window.scrollTo(0, 0);
     });
 
+  document.querySelectorAll("[data-vaidados]").forEach(b =>
+    b.onclick = () => { limparTelas(); aba = "dados"; render(); window.scrollTo(0,0); });
+
   const bPix = document.getElementById("btGerarPix");
   if (bPix) bPix.onclick = () => {
     if (!carrinho.length) return;
+    /* A SEGUNDA TRAVA, no próprio ato.
+       A tela já se recusa a montar sem os dados; esta linha existe para o
+       caso de alguém chegar ao botão por um caminho que eu não previ — que
+       foi exatamente o que aconteceu. Conferir duas vezes custa uma linha;
+       criar pedido sem login custa um ticket e um cliente esperando. */
+    const falta = faltaPreencher();
+    if (falta.length){
+      recadinho("Falta " + falta.length + (falta.length === 1 ? " item" : " itens") +
+                " antes de pagar — o primeiro é <b>" + esc(falta[0]) + "</b>.");
+      limparTelas(); aba = "dados"; render(); window.scrollTo(0, 0);
+      return;
+    }
     const n = "4" + String(1000 + EST.pedidos.length * 7 + carrinho.length);
     EST.pedidos.unshift({
       n: n, st: "aguardando",
