@@ -3002,7 +3002,15 @@ a.rod-l:hover{color:var(--rc)}
 .nt .ag button:hover{background:var(--vc);color:var(--dark)}
 .nt .ag button.sec{border-color:var(--linha2);color:var(--t3)}
 .nt.urgente{border-left:2px solid var(--magenta)}
-.prazo{color:var(--magenta)}
+/* O PRAZO ERA MAGENTA EM TODA NOTIFICAÇÃO, urgente ou não — ela achou o
+   sino "muito poluído" em 03/08 e a causa era esta: quando tudo grita
+   igual, nada se destaca (mesmo erro já achado uma vez neste arquivo, ver
+   "cor que faz tudo não diz nada" mais acima). "Corvo_10 entregou" é boa
+   notícia e vinha na mesma cor de alarme da que perde a fila em 25 min.
+   Agora só quem é `urgente:true` de verdade fica em magenta; o resto do
+   prazo é informação calma, cor de metadado. */
+.prazo{color:var(--t3)}
+.nt.urgente .prazo{color:var(--magenta);font-weight:700}
 
 /* linha do tempo do negocio */
 .trilho{display:flex;flex-direction:column;gap:0;margin-top:4px}
