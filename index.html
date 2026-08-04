@@ -13898,7 +13898,13 @@ function render(){
   if (chP && chE){
     const manda = () => {
       const t = chP.value.trim();
-      if (!t) return;
+      /* ⚠ ACHADO PELO CAÇADOR DE ARMADILHAS em 04/08: clicar em "ENVIAR" com
+         a caixa vazia não fazia NADA visível — nem erro, nem aviso, nem
+         cursor voltando pro campo. É a mesma família da queixa dela
+         ("clica e não gera nada"), só que aqui era ela mesma quem tinha
+         pedido o "não manda mensagem vazia" (`if (!t) return`), e a regra
+         estava certa — só faltava dizer isso em voz alta. */
+      if (!t){ chP.focus(); recadinho("Escreve uma mensagem antes de enviar."); return; }
       EST.conversa = EST.conversa || [];
       EST.conversa.push({meu: 1, t: t, hora: relogio()});
       salvar();
@@ -14001,8 +14007,15 @@ function render(){
   /* cupom: aplicar pelo botão, pelo Enter, ou clicando no CLIENTE sugerido */
   const cxC = document.getElementById("cxCupom");
   if (cxC){
-    const aplica = () => { cupomUsado = cxC.value.trim().toUpperCase();
-                           render(); window.scrollTo(0, window.scrollY); };
+    /* ⚠ mesmo achado do chat, mesmo conserto: clicar em "aplicar" com o
+       campo vazio trocava `cupomUsado` de "" para "" — nada mudava na tela,
+       e ninguém sabia se o clique tinha funcionado. */
+    const aplica = () => {
+      const v = cxC.value.trim().toUpperCase();
+      if (!v){ cxC.focus(); recadinho("Escreve o código do cupom antes de aplicar."); return; }
+      cupomUsado = v;
+      render(); window.scrollTo(0, window.scrollY);
+    };
     document.getElementById("btCupom").onclick = aplica;
     cxC.onkeydown = e => { if (e.key === "Enter"){ e.preventDefault(); aplica(); } };
     document.querySelectorAll("[data-cupom]").forEach(b =>
