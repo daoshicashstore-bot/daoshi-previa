@@ -1426,6 +1426,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 /* de qual produto é esta caixa de print — agora tem mais de uma na tela */
 .pr-de{font-family:var(--mono);font-size:11px;letter-spacing:.1em;
   text-transform:uppercase;color:var(--t3);margin:-4px 0 8px}
+/* estado neutro: o IndexedDB ainda está respondendo, não dá pra dizer se
+   o print está lá ou não (ver `restaurandoPrints`) */
+.pr-restaurando{display:flex;align-items:center;gap:10px;padding:12px 14px;margin-top:8px;
+  border:1px dashed var(--linha2);color:var(--t3);font-size:13px}
+.pr-rest-ic{font-size:15px}
 /* PENDENTE: nome salvo, arquivo não voltou do IndexedDB */
 .pr-cx.pendente{border-color:var(--amber,#f2a33c)}
 .pr-pend{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;margin-top:8px;
@@ -3328,17 +3333,34 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
 .dock .fita b{color:var(--amber)}
 .dock .abrir{color:#e9dff0;border-color:#43304f}
 .dock .abrir:hover{border-color:var(--gold);color:var(--gold)}
-.dock .env{display:flex;align-items:center;gap:12px;width:100%}
+.dock .env{display:flex;align-items:center;gap:12px;width:100%;min-width:0}
 .dock .pulso{width:8px;height:8px;border-radius:50%;background:var(--gold);
   animation:pisca 1.9s ease-in-out infinite;flex:none}
 @keyframes pisca{0%,100%{opacity:1}50%{opacity:.22}}
-.dock .cod{font-family:var(--mono);font-size:12px;font-weight:700;flex:none}
+/* ⚠ O BOTÃO SAÍA DA TELA EM 360/390px. Medido: a direita dele caía em
+   444px numa viewport de 360. Causa: `.cod` e `.sit` eram `flex:none` —
+   não encolhem —, e "EXEMPLO · NADA COMPRADO AINDA" sozinho passa de
+   200px. Somados, empurravam o botão para fora sem gerar scroll (o dock
+   é `position:fixed`, então o corte é silencioso).
+   Agora esses dois encolhem e cortam com reticências; só o BOTÃO segue
+   `flex:none`, porque ele é a única coisa aqui que precisa continuar
+   inteira e clicável. */
+.dock .cod{font-family:var(--mono);font-size:12px;font-weight:700;
+  flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dock .sit{font-family:var(--mono);font-size:11px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--gold);flex:none}
+  text-transform:uppercase;color:var(--gold);
+  flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dock .feed{flex:1;overflow:hidden;min-width:0}
 .dock .feed .fita{padding:0;animation-duration:48s}
-.dock .abrir{font-size:12px;font-weight:700;border:1px solid var(--linha2);padding:4px 12px;flex:none}
+.dock .abrir{font-size:12px;font-weight:700;border:1px solid var(--linha2);
+  padding:4px 12px;flex:none;white-space:nowrap}
 .dock .abrir:hover{border-color:var(--gold);color:var(--gold)}
+/* em tela estreita a fita e o `.env` folgado só roubam espaço do botão */
+@media(max-width:640px){
+  .dock .env{gap:8px;padding:0 10px}
+  .dock .sit{display:none}          /* o estado já está escrito no código */
+  .dock .abrir{padding:8px 12px;min-height:40px}
+}
 
 .rodape{border-top:1px solid var(--linha);margin-top:32px;padding:24px 0 32px;
   color:var(--t3);font-size:12px;display:flex;flex-direction:column;gap:8px}
@@ -3349,7 +3371,16 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
 @media(max-width:820px){
   .topo .env{gap:8px;padding:0 12px;flex-wrap:nowrap}
   .logo span:not(.q){display:none}          /* fica só a estrela */
-  .btTema{top:4px;right:6px;width:30px;height:30px}   /* alvo de dedo */
+  /* ALVO DE DEDO: 44×44 é o mínimo que se acerta sem errar. Vale para os
+     controles principais do cabeçalho e do carrinho — em vários deles a
+     área é aumentada por fora (`min-width/height`) sem o ícone crescer,
+     para não mudar o desenho aprovado. */
+  .btTema{top:4px;right:6px;width:44px;height:44px;font-size:16px}
+  .carr,.sino,.eu,.gv-x,.gl-b,.gl-x,.pr-bt2,.qb,.cr-x{min-width:44px;min-height:44px}
+  .gl-b,.qb{width:44px;height:44px;font-size:18px}
+  .cr-x{width:44px;height:44px}
+  .trocar-plat{min-height:44px}
+  .tbusca input,#qBusca{min-height:44px}
   .abas{order:9;flex:1 0 100%;padding:0 0 8px;margin-top:-4px}
   .topo .env{height:auto;flex-wrap:wrap;padding-top:8px}
   .aba{padding:8px 12px;font-size:13.5px}
@@ -4133,9 +4164,10 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
 <!-- A GAVETA DO CARRINHO. Fica fora do #app de proposito: ela desliza por cima
      de qualquer tela e nunca faz a pessoa sair do lugar onde estava. -->
 <div class="gv-fundo" id="gvFundo"></div>
-<aside class="gaveta" id="gaveta">
+<aside class="gaveta" id="gaveta" role="dialog" aria-modal="true"
+       aria-label="Carrinho" inert aria-hidden="true">
   <div class="gv-cab"><span class="pt2">carrinho</span><span class="orn"></span>
-    <button class="gv-x" id="gvFecha" aria-label="fechar">&times;</button></div>
+    <button class="gv-x" id="gvFecha" aria-label="Fechar o carrinho">&times;</button></div>
   <div class="gv-corpo" data-gv="corpo"></div>
   <div class="gv-pe" data-gv="pe"></div>
 </aside>
@@ -4579,17 +4611,25 @@ async function idbPega(chave){
 function printPronto(cartItemId){ return !!previewViva[cartItemId]; }
 /* nome guardado (pode existir sem o arquivo — aí o item está PENDENTE) */
 function printNome(cartItemId){ return EST.campos["print:" + cartItemId] || ""; }
+/* ENQUANTO O INDEXEDDB NÃO RESPONDEU, o print não é "ausente" — é
+   desconhecido. Mostrar "falta o print" nesse meio-tempo (e travar o
+   pagamento) seria mentira de meio segundo, mas é a meio segundo que a
+   pessoa olha a tela depois do F5. Por isso o estado neutro existe. */
+let restaurandoPrints = true;
 /* restaura os arquivos do IndexedDB depois de recarregar a página */
 async function restauraPrints(){
   const chaves = Object.keys(EST.campos || {})
     .filter(k => k.indexOf("print:") === 0).map(k => k.slice(6));
-  let achou = 0;
-  for (const id of chaves){
-    if (previewViva[id]) continue;
-    const f = await idbPega(id);
-    if (f){ previewViva[id] = URL.createObjectURL(f); achou++; }
+  try {
+    for (const id of chaves){
+      if (previewViva[id]) continue;
+      const f = await idbPega(id);
+      if (f) previewViva[id] = URL.createObjectURL(f);
+    }
+  } finally {
+    restaurandoPrints = false;
+    render();   /* agora sim: "anexado" ou "pendente", com a resposta na mão */
   }
-  if (achou) render();     /* volta de "pendente" para "anexado" na tela */
 }
 /* =====================================================================
    O LIGHTBOX — diálogo acessível de verdade, não uma aba nova
@@ -6183,8 +6223,12 @@ function blocoFiltros(){
     '<span class="cn1"></span><span class="cn2"></span>' +
     '<div class="fl1">' +
       '<div class="busca">' +
-        '<span class="lupa">&#9906;</span>' +
-        '<input id="qBusca" placeholder="Buscar jogo, moeda ou pacote…" value="' +
+        '<span class="lupa" aria-hidden="true">&#9906;</span>' +
+        /* sem nome acessível este campo era anunciado só como "caixa de
+           texto" — o placeholder some assim que a pessoa digita a primeira
+           letra, então ele não serve de rótulo */
+        '<input id="qBusca" type="search" aria-label="Buscar jogo, moeda ou pacote" ' +
+          'placeholder="Buscar jogo, moeda ou pacote…" value="' +
           esc(busca) + '" autocomplete="off">' +
         (busca ? '<button class="limpar" id="qLimpa" title="limpar">&times;</button>'
                : '<kbd>' + jogosAtivos().length + ' jogos</kbd>') +
@@ -6473,8 +6517,15 @@ function telaGames(){
        funcionamento' 'construa sua reputação online'". O dólar de hoje
        continua em outros lugares (cabeçalho do jogo, carrinho); aqui na
        vitrine agora é confiança, não cotação. */
+    /* ⚠ "100% seguro" virou "compra protegida" em 05/08. É promessa
+       absoluta que ninguém consegue cumprir — e o site inteiro é
+       construído em cima do contrário disso ("a Daoshi NÃO garante conta
+       contra recuperação", "nenhum marketplace consegue garantir isso").
+       Dizer 100% numa vitrine e "não garantimos" no contrato é a mesma
+       contradição que ela cobra dos concorrentes. As outras duas pílulas
+       ficaram como ela escreveu. */
     '<div class="cambio">' + [
-        ["&#10003;", "100% seguro"],
+        ["&#10003;", "compra protegida"],
         ["&#9679;", "24 horas de funcionamento"],
         ["&#9733;", "construa sua reputação online"]]
       .map(p => '<span class="cb-p cantinho" style="--cc2:var(--linha2)">' +
@@ -7500,13 +7551,19 @@ function gvCorpoHTML(){
     '<span><span class="gl-n">' + esc(x.rot) +
       '<span class="gl-j">' + esc(x.jogo) + ' &middot; ' + esc(x.metodo) + '</span></span>' +
       '<span class="gl-q">' +
-        '<button class="gl-b" data-gv2="-' + esc(x.ch) + '" title="tirar um">&minus;</button>' +
+        /* o nome acessível diz DE QUE produto é o botão: com vários itens
+           no carrinho, "menos"/"mais" repetidos não dizem nada a quem não
+           está vendo a linha */
+        '<button class="gl-b" data-gv2="-' + esc(x.ch) + '" title="tirar um" ' +
+        'aria-label="Tirar um ' + esc(x.rot) + '">&minus;</button>' +
         '<b>' + x.q + '</b>' +
-        '<button class="gl-b" data-gv2="+' + esc(x.ch) + '" title="mais um">+</button>' +
+        '<button class="gl-b" data-gv2="+' + esc(x.ch) + '" title="mais um" ' +
+        'aria-label="Mais um ' + esc(x.rot) + '">+</button>' +
       '</span></span>' +
     '<span class="gl-d"><span class="gl-p">' + emReal(x.usd * x.q) + '</span>' +
       (x.cb ? '<span class="gl-cb">+' + brl(x.usd*x.q*D.usd*x.cb/100) + '</span>' : "") +
-      '<button class="gl-x" data-gv2="x' + esc(x.ch) + '">remover</button></span>' +
+      '<button class="gl-x" data-gv2="x' + esc(x.ch) + '" ' +
+      'aria-label="Remover ' + esc(x.rot) + ' do carrinho">remover</button></span>' +
     '</div>').join("");
 }
 function gvPeHTML(){
@@ -7654,14 +7711,43 @@ function ligaGaveta(){
     render(); window.scrollTo(0,0);
   });
 }
+/* A GAVETA COMO DIÁLOGO DE VERDADE.
+
+   ⚠ Fechada, ela continuava no caminho do Tab: o botão de fechar, os
+   "+"/"−" de cada linha e o "Prosseguir" recebiam foco de uma coisa que
+   ninguém está vendo. Quem navega por teclado passeava por dentro de um
+   carrinho invisível antes de chegar no conteúdo da página.
+
+   `inert` resolve os dois lados de uma vez (tira do Tab E da árvore de
+   acessibilidade); o `aria-hidden` fica junto para navegador que ainda
+   não suporta `inert`. */
+let _gavetaVoltarPara = null;
 function abreGaveta(){
-  document.getElementById("gaveta").classList.add("on");
+  const g = document.getElementById("gaveta");
+  _gavetaVoltarPara = document.activeElement;
+  g.classList.add("on");
+  g.removeAttribute("inert");
+  g.setAttribute("aria-hidden", "false");
   document.getElementById("gvFundo").classList.add("on");
   pintaCarrinho();
+  const x = document.getElementById("gvFecha");
+  if (x) x.focus();
 }
 function fechaGaveta(){
-  document.getElementById("gaveta").classList.remove("on");
+  const g = document.getElementById("gaveta");
+  /* tira o foco de dentro ANTES de esconder: com `inert` num elemento que
+     ainda segura o foco, o navegador joga o foco no <body> e a pessoa
+     perde o lugar */
+  if (g.contains(document.activeElement) && document.activeElement.blur)
+    document.activeElement.blur();
+  g.classList.remove("on");
+  g.setAttribute("inert", "");
+  g.setAttribute("aria-hidden", "true");
   document.getElementById("gvFundo").classList.remove("on");
+  if (_gavetaVoltarPara && _gavetaVoltarPara.focus){
+    _gavetaVoltarPara.focus();
+    _gavetaVoltarPara = null;
+  }
 }
 
 /* a placa de titulo da casa de leilao */
@@ -10069,6 +10155,13 @@ function caixaPrintDoItem(it){
         '<button class="pr-bt2" data-pralterar="' + esc(id) + '">alterar</button>' +
         '<button class="pr-bt2 pr-remover" data-prremover="' + esc(id) + '">remover</button>' +
         '</span></div></div>';
+  if (nome && restaurandoPrints)
+    /* ESTADO NEUTRO: tem nome salvo e o IndexedDB ainda está respondendo.
+       Não é "anexado" nem "pendente" ainda — dizer qualquer um dos dois
+       agora seria chute. */
+    return '<div class="pr-cx" data-pritem="' + esc(id) + '">' + cab +
+      '<div class="pr-restaurando"><span class="pr-rest-ic">&#9203;</span>' +
+      '<span>restaurando print&hellip;</span></div></div>';
   if (nome)
     /* PENDENTE: o nome sobreviveu ao F5, o arquivo não. Antes disso aqui
        existir, este caso passava por "print recebido" e liberava o
@@ -10223,29 +10316,58 @@ function telaDados(){
    bug do cursor pulando fora. É isolar só o portão (contagem + botão) numa
    `id` própria e redesenhar SÓ ELE a cada tecla, deixando o resto da tela
    — onde o cursor está — intocado. ===================================== */
+/* ⚠ 05/08 — O BUG DO PRIMEIRO CLIQUE, e por que a estrutura mudou.
+
+   Ela: "preenche o último campo, deixa o foco nele, clica em IR PARA O
+   PAGAMENTO — o primeiro clique não avança. Depois que o campo perde o
+   foco, funciona."
+
+   A causa estava aqui: `pintaGatePagamento()` fazia `innerHTML = ...` no
+   contêiner inteiro, o que DESTRÓI e RECRIA o `<button>`. Um clique do
+   navegador só vira evento se o mousedown e o mouseup caírem no MESMO
+   elemento. Ao clicar com o foco ainda no campo, a sequência é:
+
+     mousedown no botão → blur do campo → pintaGate() recria o botão
+     → mouseup cai num botão NOVO → nenhum clique é disparado
+
+   O segundo clique funcionava porque aí o blur já tinha acontecido.
+
+   Conserto: o botão agora NASCE UMA VEZ e nunca mais é recriado. O que
+   muda a cada tecla é só o `disabled` e o texto do aviso, que vivem em
+   nós separados. Sem timeout, sem gambiarra — o elemento simplesmente
+   para de sumir debaixo do dedo de quem clica. */
 function blocoGatePagamento(falta){
   falta = falta || faltaPreencher();
-  return (falta.length
-      ? '<div class="falta"><b>Falta preencher ' + falta.length +
-        (falta.length === 1 ? ' campo' : ' campos') + ':</b>' +
-        '<ul>' + falta.slice(0, 6).map(f => '<li>' + esc(f) + '</li>').join("") +
-        (falta.length > 6 ? '<li>e mais ' + (falta.length - 6) + '</li>' : "") + '</ul></div>'
-      : '<div class="seguro" style="color:var(--verde)">&#10003; Tudo preenchido. ' +
-        'Pode ir para o pagamento.</div>') +
+  return '<div id="gateAviso" role="status" aria-live="polite">' +
+      avisoDoGate(falta) + '</div>' +
     '<button class="comprar-ja btn-mmo" id="btIrPagar"' +
       (falta.length ? ' disabled' : '') + '>IR PARA O PAGAMENTO</button>' +
     '<div class="seguro">O pagamento só abre com os dados preenchidos. ' +
     '<b>É de propósito:</b> pedido pago sem login trava do outro lado, e aí você ' +
     'fica esperando por um motivo que dava para evitar aqui.</div>';
 }
-/* redesenha SÓ o portão — chamado a cada tecla, para o botão acordar assim
-   que o último campo faltante for preenchido, sem mexer no resto da tela
-   nem no foco de quem está digitando */
+/* só o TEXTO do aviso — é a única parte que pode ser reescrita a cada
+   tecla, porque não tem nada clicável dentro */
+function avisoDoGate(falta){
+  falta = falta || faltaPreencher();
+  return falta.length
+    ? '<div class="falta"><b>Falta preencher ' + falta.length +
+      (falta.length === 1 ? ' campo' : ' campos') + ':</b>' +
+      '<ul>' + falta.slice(0, 6).map(f => '<li>' + esc(f) + '</li>').join("") +
+      (falta.length > 6 ? '<li>e mais ' + (falta.length - 6) + '</li>' : "") + '</ul></div>'
+    : '<div class="seguro" style="color:var(--verde)">&#10003; Tudo preenchido. ' +
+      'Pode ir para o pagamento.</div>';
+}
+/* chamado a cada tecla: acorda o botão assim que o último campo faltante
+   for preenchido, sem mexer no resto da tela nem no foco de quem digita —
+   e, agora, SEM trocar o botão de lugar no DOM. */
 function pintaGatePagamento(){
-  const el = document.getElementById("gatePag");
-  if (!el) return;                      /* não está na tela de dados agora */
-  el.innerHTML = blocoGatePagamento();
-  ligaGatePagamento();
+  const av = document.getElementById("gateAviso");
+  const bt = document.getElementById("btIrPagar");
+  if (!av || !bt) return;               /* não está na tela de dados agora */
+  const falta = faltaPreencher();
+  av.innerHTML = avisoDoGate(falta);
+  bt.disabled = falta.length > 0;       /* só o atributo, o nó continua o mesmo */
 }
 function ligaGatePagamento(){
   const bIrP = document.getElementById("btIrPagar");
@@ -14416,6 +14538,13 @@ function render(){
   const tbusca = document.querySelector(".tbusca");
   if (tbusca) tbusca.style.display =
     (porta === "store" && aba === "games" && !jogoAberto) ? "none" : "";
+
+  /* guarda onde a pessoa está, para o F5 devolver ela aqui (ver
+     `guardaNavegacao`). `typeof` porque `render()` roda antes da função
+     existir no primeiro boot — hoisting cobre `function`, mas não a
+     const `NAV_CHAVE` que ela usa. */
+  if (typeof guardaNavegacao === "function" && document
+      .getElementById("app").classList.contains("on")) guardaNavegacao();
   /* ÍCONE EM CADA ITEM DO MENU — recortado do desenho dela (02/08).
      Só as três abas da Store têm ícone no desenho; as outras seguem em texto,
      que é melhor do que eu inventar ícone que não combina com o resto. */
@@ -15539,12 +15668,23 @@ function render(){
      lugares ao mesmo tempo, e é por isso que o amigo dela não achou o dele. */
   const dc = document.getElementById("dockCod");
   const ds = document.getElementById("dockSit");
+  const bp = document.getElementById("btPedido");
+  const meu = (EST.pedidos || [])[0];
   if (dc) dc.textContent = "#pedido-" + numeroDoPedido();
   if (ds){
-    const meu = (EST.pedidos || [])[0];
     ds.textContent = meu ? (meu.st === "pago" ? "pago · em andamento"
                                               : "aguardando pix")
                          : "exemplo · nada comprado ainda";
+  }
+  /* ⚠ o botão dizia "ver pedido" mesmo sem existir pedido nenhum — ela,
+     05/08: "se o dock estiver mostrando apenas uma demonstração, use um
+     rótulo coerente, como 'ver exemplo', em vez de apresentar a ação como
+     um pedido real". */
+  if (bp){
+    bp.textContent = meu ? "ver pedido" : "ver exemplo";
+    bp.setAttribute("aria-label", meu
+      ? "Ver o seu pedido " + numeroDoPedido()
+      : "Ver um pedido de exemplo — você ainda não comprou nada");
   }
 }
 
@@ -15624,10 +15764,13 @@ if (new URLSearchParams(window.location.search).get("staff") === "1"){
   document.getElementById("lbxX").onclick = fechaLightbox;
   cx.onclick = e => { if (e.target === cx) fechaLightbox(); };
 })();
-/* traz os prints de volta do IndexedDB depois de um F5. Enquanto não
-   volta, o item aparece como PENDENTE e o pagamento fica travado — que é
-   o certo: melhor pedir de novo do que deixar passar sem arquivo. */
-restauraPrints();
+/* BOOT: primeiro os arquivos voltam do IndexedDB, DEPOIS a tela decide o
+   que mostrar. A ordem importa — decidir "falta print" antes de o
+   IndexedDB responder mostraria pendência que não existe. */
+restauraPrints().then(() => {
+  /* e só então volta pra onde a pessoa estava (se estava em algum lugar) */
+  if (!document.getElementById("app").classList.contains("on")) restauraNavegacao();
+});
 /* O ícone do carrinho abre a GAVETA, não uma tela.
    Na página do jogo o carrinho já está do lado; abrir uma tela ali seria tirar
    a pessoa do lugar. Em qualquer outra tela, a gaveta desliza por cima. */
@@ -16043,6 +16186,57 @@ function entrar(qual, opc){
   render(); window.scrollTo(0, 0);
   /* o campo de busca é redesenhado pelo render() a partir da variável `busca`,
      então basta ter setado ela acima — não precisa mexer no input na mão */
+  guardaNavegacao();
+}
+
+/* =====================================================================
+   ONDE A PESSOA ESTAVA — restaurado depois do F5
+
+   O carrinho e os prints já sobreviviam ao recarregar, mas a TELA voltava
+   pro portal "escolha uma porta". Quem estava no meio do checkout com o
+   carrinho cheio tinha que refazer o caminho inteiro pra chegar de volta
+   onde já estava.
+
+   Vai em `sessionStorage` (não `localStorage`) de propósito: é posição de
+   navegação, não preferência. Fecha a aba, esquece — abrir o site de novo
+   amanhã tem que começar do começo, não no meio de um checkout de ontem.
+   Nada de senha aqui, óbvio: senha não sai de `senhaViva` nunca.
+   ===================================================================== */
+const NAV_CHAVE = "daoshi-nav";
+function guardaNavegacao(){
+  try {
+    sessionStorage.setItem(NAV_CHAVE, JSON.stringify({
+      porta: porta, aba: aba, jogoAberto: jogoAberto, gcJogo: gcJogo,
+      perfilAba: perfilAba, staffAba: staffAba
+    }));
+  } catch(e){}
+}
+function leNavegacao(){
+  try { return JSON.parse(sessionStorage.getItem(NAV_CHAVE) || "null"); }
+  catch(e){ return null; }
+}
+/* Volta pra onde estava. Roda DEPOIS de `restauraPrints()` terminar (ver a
+   chamada lá embaixo): enquanto o IndexedDB não devolveu os arquivos, um
+   print pode parecer ausente sem estar — e decidir "falta print" nesse
+   meio-tempo mostraria a tela errada e travaria o pagamento à toa. */
+function restauraNavegacao(){
+  const n = leNavegacao();
+  if (!n || !n.porta || !PORTAS[n.porta]) return false;
+  porta = n.porta;
+  aba = n.aba || ABAS[porta][0][0];
+  jogoAberto = n.jogoAberto || null;
+  gcJogo = n.gcJogo || null;
+  if (n.perfilAba) perfilAba = n.perfilAba;
+  if (n.staffAba) staffAba = n.staffAba;
+  /* etapa do checkout que não existe mais sem carrinho: cai no carrinho
+     em vez de abrir uma tela de pagamento vazia */
+  if (!carrinho.length && ["dados","pagar","carrinho"].indexOf(aba) >= 0)
+    aba = ABAS[porta][0][0];
+  document.getElementById("escolha").style.display = "none";
+  document.getElementById("app").classList.add("on");
+  document.getElementById("dock").style.display = "flex";
+  render(); window.scrollTo(0, 0);
+  return true;
 }
 
 /* EM QUE TELAS A HOME APARECE.
