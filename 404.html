@@ -10351,20 +10351,26 @@ function msgsDoTicket(fl, ps, ate, l0){
         "Recibo já disponível no pedido.", "02:44");
     }
     else if (p.t === "Na fila")
-      põe("sis", "sistema", fl.forn === "sombra"
-        ? "Pedido enviado direto para o fornecedor — <b>este jogo não tem conversa</b>, " +
-          "a entrega é automática."
-        : "Pedido enviado para o <b>" + esc(fl.fornRot) + "</b>. Ele responde aqui dentro.",
-        "02:45");
+      /* "vc ta praticamente revelando o nosso fornecedor... só precisa
+         ficar igual o fluxo do bot" — ela, 05/08, mandando o texto exato:
+         "📦 Seu pedido já está sendo processado e está na fila. Logo será
+         realizado — fique de olho aqui no chat!". Trocado palavra por
+         palavra, sem nome nem rótulo de fornecedor. */
+      põe("sis", "sistema", "📦 Seu pedido já está sendo processado e está na fila. " +
+        "Logo será realizado — fique de olho aqui no chat!", "02:45");
     else if (p.t === "Pede os dados")
-      põe("forn", fl.fornRot, "Preciso do acesso para entrar: <b>" +
+      /* `forn` já existia pronta ("Fornecedor"/"Daoshi", calculada logo
+         acima) exatamente pra isso — só não estava sendo usada, e
+         `fl.fornRot` (o rótulo que vaza a origem, tipo "Parceiro
+         asiático") entrava direto como nome de quem manda a mensagem. */
+      põe("forn", forn, "Preciso do acesso para entrar: <b>" +
         (fl.campos.length ? fl.campos.join("</b>, <b>") : "login") +
         "</b>. Mande aqui dentro do pedido — nunca por fora.", "02:47");
     else if (p.t === "Código 2 fatores")
-      põe("forn", fl.fornRot, "A conta pediu <b>código de 2 fatores</b>. " +
+      põe("forn", forn, "A conta pediu <b>código de 2 fatores</b>. " +
         "Manda o código que chegou agora, ele vale poucos minutos.", "02:49");
     else if (p.t === "Pode logar")
-      põe("forn", fl.fornRot, "Entreguei. <b>Pode logar</b> e conferir.", "02:53");
+      põe("forn", forn, "Entreguei. <b>Pode logar</b> e conferir.", "02:53");
     else if (p.t === "Confirmação")
       põe("sis", "sistema", "Confirme aí embaixo se recebeu tudo certo. " +
         "Se você não responder, o pedido <b>fecha sozinho em 24 h</b>.", "02:53");
@@ -10471,16 +10477,22 @@ function telaTicket(){
       'JÁ PAGUEI</button>' +
       '<button class="btn-mmo vazio" style="--bc:var(--t3)">copiar o código Pix</button></div></div>';
   else if (p.t === "No painel do fornecedor")
-    /* "COMO A GENTE VIGIA ESTE PASSO" SAIU — ela, 05/08, apontando bem aqui:
-       "essa parte totalmente inútil". Contava pro CLIENTE o limiar interno
-       de 10 minutos que a STAFF usa pra decidir quando ir atrás do
-       fornecedor (vem de `lib/chat-status.ts`) — informação operacional
-       nossa, não do cliente. Ele só precisa saber que não precisa fazer
-       nada agora; o "quando cobrar" é problema da Daoshi, não dele. */
-    vez = '<div class="vez-cx deles"><div class="vez-t">&#9679; é a vez do fornecedor</div>' +
-      '<h4>' + esc(fl.fornRot) + '</h4>' +
-      '<p>' + esc(fl.fornD) + '. Prazo combinado: <b>' + esc(m.prazo) + '</b>. ' +
-      'Você não precisa fazer nada agora — quando for a sua vez de novo, o sino avisa.</p>' +
+    /* "COMO A GENTE VIGIA ESTE PASSO" já tinha saído (ela, 05/08: "essa
+       parte totalmente inútil" — expunha o limiar interno de 10 minutos
+       que a staff usa, informação operacional nossa, não do cliente).
+
+       O QUE FICOU ERA IGUAL RUIM: `fl.fornRot`/`fl.fornD` (ex.: "Parceiro
+       asiático") é a MESMA informação de fornecedor que "Quem entrega" já
+       tinha saído do resumo do pedido por revelar demais — só que
+       vazando aqui, na caixa principal. Ela, 05/08: "vc ta praticamente
+       revelando o nosso fornecedor... só precisa ficar igual o fluxo do
+       bot", e mandou o texto exato que o bot usa:
+       "📦 Seu pedido já está sendo processado e está na fila. Logo será
+       realizado — fique de olho aqui no chat!" — sem nome, sem rótulo,
+       sem prazo específico do fornecedor. Portado palavra por palavra. */
+    vez = '<div class="vez-cx deles"><div class="vez-t">&#128230; seu pedido está na fila</div>' +
+      '<p>Seu pedido já está sendo processado e está na fila. Logo será realizado ' +
+      '— fique de olho aqui no chat!</p>' +
       '</div>' +
       /* o botão de avançar continua existindo pra eu testar o protótipo,
          mas não pode mais parecer um botão de verdade da tela do cliente —
