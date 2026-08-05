@@ -1470,7 +1470,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .item.on{border-color:var(--gold);background:linear-gradient(180deg,rgba(255,215,0,.10),rgba(255,215,0,.03));
   box-shadow:inset 0 0 0 1px rgba(255,215,0,.3), 0 0 20px -8px var(--gold)}
 .item.on::after{content:"\2713";position:absolute;top:3px;right:5px;font-size:11px;color:var(--gold)}
-.item .ic{width:74px;height:74px;flex:none;display:grid;place-items:center;overflow:hidden;
+/* "os ícones da página de comprar tão muito pequenos" — ela, 05/08. Slot
+   subiu de 74px pra 86px, e as porcentagens de preenchimento (abaixo, em
+   `iconePack()`) subiram junto — sem isso o slot cresce mas a imagem
+   dentro continua do mesmo tamanho, só com mais fundo vazio ao redor. */
+.item .ic{width:86px;height:86px;flex:none;display:grid;place-items:center;overflow:hidden;
   background:radial-gradient(circle at 50% 38%, rgba(255,215,0,.14), transparent 68%)}
 .ic-dc{width:34px;height:34px;object-fit:contain;display:block}
 .ic-uni{font-size:21px;line-height:1}
@@ -5389,17 +5393,18 @@ function iconePack(g, m, item, i, total){
      nada). */
   const doMininix = iconePacoteMininix(m, item);
   if (doMininix)
-    /* 82%, fixo — as imagens dele vêm em tamanhos bem diferentes entre si
-       (de 84px a 500px), sem isso cada ícone ocupava um pedaço distinto do
-       slot de 74px e a prateleira ficava desigual, o mesmo problema que já
-       resolvi uma vez pras capas da vitrine. */
+    /* era 82% — ela: "os ícones da página de comprar tão muito pequenos".
+       As imagens dele vêm em tamanhos bem diferentes entre si (de 84px a
+       500px), então fixo continua sendo a solução (senão cada ícone ocupa
+       um pedaço distinto do slot e a prateleira fica desigual), só que
+       agora preenchendo mais do slot de 86px. */
     return '<img class="ic-real" src="' + doMininix + '" alt="" ' +
-           'style="width:82%;height:82%">';
+           'style="width:90%;height:90%">';
   const real = arteReal(m, item.rot);
   if (!real) return arteProduto(item.rot, i === undefined ? 0 : i,
                                 total === undefined ? 1 : total);
   const t = (total > 1) ? (i / (total - 1)) : 0.6;
-  const tam = Math.round(58 + t * 42);        /* 58% no menor, 100% no maior */
+  const tam = Math.round(68 + t * 32);        /* 68% no menor, 100% no maior (era 58%) */
   return '<img class="ic-real" src="' + real + '" alt="" ' +
          'style="width:' + tam + '%;height:' + tam + '%">';
 }
