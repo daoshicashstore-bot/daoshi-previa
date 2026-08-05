@@ -5211,13 +5211,20 @@ function selaConfianca(v, aberto){
    em 04/08 junto com o HTML que a usava (ver o comentário perto de
    `rotuloMetodoNaLista`). */
 
-/* o rótulo do método na lista de produto — quase sempre `m.rot`, exceto no
-   Top Up do MIR4: "Login e senha" descreve COMO a gente entrega, não O QUE
-   é. Ela: "ao invés de 'pacotes', coloque Packs & Top-up". `m.rot` em si
-   fica intocado — telaDados() e o resto do fluxo de entrega ainda dependem
-   dele dizer "Login e senha" de verdade. */
-function rotuloMetodoNaLista(m){
-  return m.gid === "mir4" ? "Packs & Top-up" : m.rot;
+/* o rótulo do método na lista de produto — segue O QUE o método vende, não
+   COMO ele entrega (`m.rot` tipo "Login e senha" descreve o COMO, e `m.rot`
+   em si fica intocado — telaDados() e o resto do fluxo de entrega ainda
+   dependem dele dizer "Login e senha" de verdade). Ela, 05/08: "você segue
+   a lógica do que o game vende" — Gold é Gold, ponto por UID vira "{jogo}
+   Points", TWD e Giftcard usam o nome deles, e o resto (recarga simples,
+   a maioria dos jogos) é só "Top Up". */
+function rotuloMetodoNaLista(m, g){
+  if (m.faixas) return "Gold";
+  const cat = categoriaDoMetodo(g, m);
+  if (cat === "giftcard") return "Giftcard";
+  if (cat === "weblink") return "TWD";
+  if (/uid/i.test(m.rot || "")) return g.nome + " Points";
+  return "Top Up";
 }
 
 /* =========================================================================
@@ -6011,9 +6018,11 @@ function telaGames(){
              o MESMO índice, mesmo o cabeçalho sendo desenhado na volta do
              Pack (mi=1). */
           const idAlvo = misto ? mets.indexOf(goldMet) : mi;
+          /* Ela, 05/08, direto no print: "Remova os & das coisas e deixe só
+             assim: Gold l Pacotes l Top up". Sem "&", com "|" separando. */
           const cabecalho = mets.length > 1
             ? '<div class="gr-t met" id="jgrupo-' + idAlvo + '"><span>' +
-              esc(misto ? "Packs & Top-up & Gold" : rotuloMetodoNaLista(m)) + '</span>' +
+              esc(misto ? "Gold | Pacotes | Top up" : rotuloMetodoNaLista(m, g)) + '</span>' +
               '<i>' + m.itens.length + ' itens' + (misto ? " + gold" : "") +
               ' &middot; ' + esc(m.prazo) + '</i></div>'
             : "";
