@@ -1067,8 +1067,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    dela mostra. */
 .jogo .capa{aspect-ratio:3/2;display:grid;place-items:center;position:relative;overflow:hidden;
   background:linear-gradient(150deg,var(--medium),var(--dark))}
-.jogo .capa .cp-po{width:100%;height:100%;object-fit:cover;display:block;
-  transition:transform .3s}
+/* "as imagens não estão centralizadas" — ela, 05/08. Achado com o
+   inspetor: dentro de um grid com `place-items:center`, `width:100%;
+   height:100%` num <img> não travava no tamanho do PAI — a caixa da
+   imagem virava quadrada (do jeito que a arte de origem é, 512×512) em
+   vez de retangular feito `.capa` (proporção 3/2), sobrando 67px de
+   imagem pra baixo/cima de um jeito que não ficava simétrico o corte.
+   `position:absolute;inset:0` trava a caixa da imagem no tamanho do pai
+   de verdade, sem depender de como o grid decide esticar (ou não) o
+   item — aí o `object-fit:cover` centraliza dentro da caixa certa. */
+.jogo .capa .cp-po{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  object-position:center;display:block;transition:transform .3s}
 .jogo:hover .capa .cp-po{transform:scale(1.05)}
 .cp-fundo{position:absolute;inset:-14%;background-size:cover;background-position:center;
   filter:blur(17px) saturate(1.35) brightness(.82);opacity:.62;z-index:0}
@@ -1076,7 +1085,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   display:block;transition:transform .3s;
   box-shadow:0 8px 26px rgba(var(--esc),.45);border-radius:18%}
 .jogo:hover .capa .cp-ic{transform:scale(1.06)}
-.jogo .capa img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+/* mesmo defeito do `.cp-po` acima, mesmo remédio — este seletor genérico
+   pega qualquer <img> solto dentro de `.capa` que não seja `.cp-po`/`.cp-ic`. */
+.jogo .capa img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  object-position:center;display:block;transition:transform .3s}
 .jogo:hover .capa img{transform:scale(1.06)}
 .jogo .capa .sig{font-family:var(--mono);font-size:27px;font-weight:800;letter-spacing:.06em;color:var(--c)}
 /* o selo do método foi do TOPO para o RODAPÉ da arte.
