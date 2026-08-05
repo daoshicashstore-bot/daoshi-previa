@@ -3590,6 +3590,14 @@ a.rod-l:hover{color:var(--rc)}
 .vez-cx.deles{border-color:var(--linha2);background:rgba(var(--cla),.02)}
 .vez-cx.deles::before,.vez-cx.deles::after{border-color:var(--linha2)}
 .vez-cx.deles .vez-t{color:var(--t3)}
+/* controle de teste do protótipo — precisa existir pra eu simular o passo,
+   mas NUNCA pode parecer um botão de verdade da tela do cliente. Ela, 05/08:
+   "avançar (só neste protótipo)" virou peso visual igual um botão real, e
+   isso é exatamente o problema que apontou. Fica pequeno, cinza, sem caixa. */
+.proto-av{display:block;margin:6px 0 0;background:none;border:0;padding:0;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--t3);
+  opacity:.6;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.proto-av:hover{opacity:1;color:var(--t2)}
 /* campos de credencial dentro do ticket, com o aviso de apagar depois */
 .cred{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:12px}
 .cred-c{border:1px solid var(--linha2);background:var(--dark);padding:8px 12px}
@@ -10472,26 +10480,22 @@ function telaTicket(){
       'JÁ PAGUEI</button>' +
       '<button class="btn-mmo vazio" style="--bc:var(--t3)">copiar o código Pix</button></div></div>';
   else if (p.t === "No painel do fornecedor")
-    /* O LIMITE DE 10 MINUTOS vem do código dela (`lib/chat-status.ts`): o
-       painel pinta de VERDE nos 10 primeiros minutos depois do pagamento e
-       de VERMELHO depois — "Sem retorno do chinês". É o número que separa
-       "está andando" de "alguém precisa olhar", e o site não dizia isso em
-       lugar nenhum. Dito aqui, a pessoa sabe quando cobrar. */
+    /* "COMO A GENTE VIGIA ESTE PASSO" SAIU — ela, 05/08, apontando bem aqui:
+       "essa parte totalmente inútil". Contava pro CLIENTE o limiar interno
+       de 10 minutos que a STAFF usa pra decidir quando ir atrás do
+       fornecedor (vem de `lib/chat-status.ts`) — informação operacional
+       nossa, não do cliente. Ele só precisa saber que não precisa fazer
+       nada agora; o "quando cobrar" é problema da Daoshi, não dele. */
     vez = '<div class="vez-cx deles"><div class="vez-t">&#9679; é a vez do fornecedor</div>' +
       '<h4>' + esc(fl.fornRot) + '</h4>' +
       '<p>' + esc(fl.fornD) + '. Prazo combinado: <b>' + esc(m.prazo) + '</b>. ' +
       'Você não precisa fazer nada agora — quando for a sua vez de novo, o sino avisa.</p>' +
-      '<div class="dep" style="margin-top:12px">' +
-      '<div class="dep-t">como a gente vigia este passo</div>' +
-      '<div class="dep-p"><span class="dp-n">&#9679;</span><span>' +
-      '<b>Até 10 minutos</b><i>é o normal: o pedido está no painel do ' +
-      'fornecedor e anda sozinho</i></span></div>' +
-      '<div class="dep-p"><span class="dp-n">&#9888;</span><span>' +
-      '<b>Passou de 10 minutos sem retorno</b><i>o pedido acende no painel da ' +
-      'Daoshi e uma pessoa vai atrás — você não precisa cobrar</i></span></div>' +
       '</div>' +
-      '<div class="vez-ac"><button class="btn-mmo vazio" data-tkav="1" style="--bc:var(--t3)">' +
-      'avançar (só neste protótipo)</button></div></div>';
+      /* o botão de avançar continua existindo pra eu testar o protótipo,
+         mas não pode mais parecer um botão de verdade da tela do cliente —
+         vira um linkzinho discreto, do jeito que o resto do site já trata
+         controle de staff/dev (ver o ?staff=1 do cabeçalho). */
+      '<button class="proto-av" data-tkav="1">&#9881; avançar (só staff/protótipo)</button>';
   else if (p.t === "Pede os dados" || p.t === "Preenchendo conta")
     vez = '<div class="vez-cx"><div class="vez-t">&#9679; é a sua vez</div>' +
       '<h4>Mande o acesso, aqui dentro</h4>' +
