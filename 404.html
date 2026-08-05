@@ -2699,27 +2699,6 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .ac-i.forte{border-left:3px solid var(--gold);padding-left:12px;
   background:color-mix(in srgb,var(--gold) 5%,transparent)}
 
-/* o prazo de reclamação, no topo do pedido — do manual da GGMax */
-.prazo-cx{display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:center;
-  border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 8%,var(--deep));
-  padding:12px 16px;margin:16px 0}
-.pz-i{font-size:17px;color:var(--gold);line-height:1}
-.pz-c{display:flex;flex-direction:column;gap:2px;min-width:0}
-.pz-c b{font-size:13.5px;color:var(--txt);line-height:1.4}
-.pz-c i{font-style:normal;font-size:12px;color:var(--t3);line-height:1.5}
-.pz-n{font-family:var(--mono);font-size:21px;font-weight:700;color:var(--gold);
-  white-space:nowrap}
-@media(max-width:640px){.prazo-cx{grid-template-columns:24px 1fr}.pz-n{display:none}}
-
-/* o aviso de dia de reset — a resposta que ela mais dá em 4 anos, dita antes
-   de perguntarem. Cor de informação, não de alerta: não é problema, é o jogo. */
-.reset-cx{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start;
-  border:1px solid var(--info);border-left:3px solid var(--info);
-  background:color-mix(in srgb,var(--info) 9%,var(--deep));
-  padding:12px 16px;margin:12px 0;font-size:13.5px;color:var(--t2);line-height:1.6}
-.reset-cx b{color:var(--txt)}
-.rs-ic{font-size:17px;line-height:1.2}
-
 /* o campo de cupom no carrinho */
 .cupom-cx{margin:12px 0;padding-top:12px;border-top:1px solid var(--linha)}
 .cupom-cx label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;
@@ -10175,19 +10154,6 @@ function ehPedidoDeExemplo(){
    E na Store (que é ela quem vende) o prazo é o da conferência: 2 horas para
    dizer que veio errado, e depois disso ainda existe suporte — só não existe
    mais disputa sobre o ESTADO do que chegou. */
-function prazoDoPedido(fl){
-  if (fl.gid === "mir4gold" || /gold|moeda/i.test(fl.contaRot || ""))
-    return {horas: 2, curto: "2 h",
-            porque: "No gold a conferência é rápida porque o valor aparece na hora."};
-  if (fl.print)
-    return {horas: 2, curto: "2 h",
-            porque: "É o tempo de entrar no jogo e conferir se chegou tudo — e se o " +
-                    "jogo estiver em manutenção, o prazo para e recomeça."};
-  return {horas: 2, curto: "2 h",
-          porque: "Confira antes de usar: depois de mexer, ninguém consegue saber " +
-                  "o que já estava faltando."};
-}
-
 /* Corrigido por ela em 02/08, e os dados já diziam isso:
    "é o CLIENTE que anuncia o gold no mercado, para enviarmos ao fornecedor
     comprar. O cliente sempre envia uma imagem. E a gente aperta okay para
@@ -10451,30 +10417,12 @@ function telaTicket(){
      grande perto de `let vez = ""`). */
   const fim = p.t === "Fechado" || p.t === "Concluído";
 
-  /* O AVISO DE DIA DE RESET.
-     Ela disse, e eu demorei a pôr: "dia de reset do jogo aumenta o prazo — ela
-     responde isso o tempo todo e o site não diz em lugar nenhum". Somado a
-     "68% de todos os tickets são 'em que pé está meu pedido?'", este aviso é o
-     que mais tem chance de derrubar ticket no site inteiro: ele responde a
-     pergunta ANTES de ela ser feita.
-     No site real, `resetHoje` vem do calendário de manutenção de cada jogo.
-     Aqui é uma maquete e por isso ele aparece sempre que o pedido está
-     esperando o fornecedor. */
-  /* os nomes dos passos vêm de `passosDoTicket`; eu tinha inventado outros e o
-     aviso nunca aparecia. Vale enquanto o pedido depende do fornecedor. */
-  /* os nomes dos passos mudaram quando a esteira foi refeita com o fluxo real
-     — este aviso vale enquanto o pedido depende do fornecedor */
-  const esperando = ["Pagamento", "Aguardando Pix", "Na fila", "No painel do fornecedor",
-                     "Gold no mercado", "Código de segurança", "Código 2 fatores",
-                     "Pode logar"].indexOf(p.t) >= 0;
-  const avisoReset = esperando
-    ? '<div class="reset-cx"><span class="rs-ic">&#9203;</span><span>' +
-      '<b>Hoje é dia de reset no ' + esc(g.nome) + '.</b> ' +
-      'Depois da manutenção o fornecedor pega fila, e o prazo de <b>' +
-      esc(m.prazo) + '</b> pode dobrar. <b>Não é problema no seu pedido</b> — é o ' +
-      'jogo. Assim que a fila andar, ele segue sozinho e você é avisado aqui.' +
-      '</span></div>'
-    : "";
+  /* "DIA DE RESET" E "DINHEIRO LIBERADO EM [DATA]" SAÍRAM — ela, 05/08:
+     "Te avisei para retirar isso e continua com isso". Os dois avisos
+     ficavam logo abaixo da esteira, antes mesmo do chat, e ela já tinha
+     marcado essa área inteira como "flood de desinformação" no print
+     anterior. `avisoReset`, o bloco `prazo-cx` e `prazoDoPedido()`
+     saíram inteiros — nenhum dos três tinha outro uso no site. */
 
   /* o que a pessoa (ou o outro lado) tem que fazer AGORA
      ⚠ ACHADO 04/08 3a rodada: `passosDoTicket()` (fluxo geral) e
@@ -10855,37 +10803,6 @@ function telaTicket(){
         'com o dinheiro já pago e o fornecedor esperando — e aí vira ticket. ' +
         'É mais rápido resolver agora.</span></div>'; })() +
 
-    /* O PRAZO DE LIBERAÇÃO, NO TOPO DO PEDIDO.
-       Do manual da GGMax: "atente-se para abrir uma reclamação ANTES do prazo
-       em que o dinheiro será liberado ao vendedor — este está informado no
-       início do chat do pedido".
-       O detalhe que importa é ONDE: no início do chat, não no contrato. De que
-       adianta a regra existir se a pessoa descobre o prazo depois de vencido?
-       Aqui vale para os dois lados: o comprador vê quanto tempo tem para
-       reclamar, e o vendedor vê quando recebe. */
-    /* DATA E HORA EXATAS, não "2 horas".
-       Do print do chat da GGMax que ela mandou:
-         "O dinheiro desta venda será liberado para o vendedor dia 11/03/2026
-          10:46, certifique-se que todos os trâmites da negociação sejam
-          resolvidos até esta data."
-       É melhor que a minha versão em duas pontas: dizer "2 horas" obriga a
-       pessoa a fazer a conta e a lembrar de quando começou. Data e hora ela
-       lê uma vez e sabe. E vale para os dois lados no mesmo texto. */
-    (() => { const P = prazoDoPedido(fl);
-      const d = new Date(Date.now() + P.horas * 3600 * 1000);
-      const dd = ("0" + d.getDate()).slice(-2) + "/" +
-                 ("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear();
-      const hh = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
-      return '<div class="prazo-cx">' +
-        '<span class="pz-i">&#9201;</span>' +
-        '<span class="pz-c">' +
-        '<b>O dinheiro deste pedido é liberado ao vendedor em ' + dd + ' às ' + hh +
-        '.</b>' +
-        '<i>Até lá, qualquer problema você resolve por aqui e o valor não sai do ' +
-        'lugar. ' + esc(P.porque) + '</i></span>' +
-        '<span class="pz-n">' + esc(P.curto) + '</span>' +
-      '</div>'; })() +
-    avisoReset +
     vez +
     /* AS DUAS DÚVIDAS QUE EU NÃO VOU RESOLVER SOZINHO.
        Já inventei fluxo uma vez (o gold entrou em login e senha) e ela pegou.
