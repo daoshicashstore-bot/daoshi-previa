@@ -3598,6 +3598,15 @@ a.rod-l:hover{color:var(--rc)}
   font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--t3);
   opacity:.6;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 .proto-av:hover{opacity:1;color:var(--t2)}
+/* faixa de staff dentro do ticket do cliente — só existe em ?staff=1,
+   nunca aparece pro cliente normal */
+.staff-tk{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:color-mix(in srgb, var(--magenta) 10%, var(--deep));
+  border:1px dashed var(--magenta);padding:8px 12px;margin-top:8px;
+  font-size:12px;color:var(--t2)}
+.staff-tk-ic{color:var(--magenta)}
+.staff-tk button{background:var(--magenta);color:#fff;border:0;padding:5px 10px;
+  font-size:11.5px;cursor:pointer;font-weight:700}
 /* campos de credencial dentro do ticket, com o aviso de apagar depois */
 .cred{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:12px}
 .cred-c{border:1px solid var(--linha2);background:var(--dark);padding:8px 12px}
@@ -4137,6 +4146,11 @@ let gcJogo = null, gcAba = "ofertas";    // gamecoin: jogo escolhido e aba do me
 let mpOrdem = "rel";                     // marketplace: ordenação
 let perfilAba = "pedidos";               // perfil: pedidos, carteira, patentes, conversas...
 let staffAba = "saques";                 // painel da staff
+/* separado de `aba === "staff"` (que é só a TELA do painel): isto aqui
+   marca que quem está vendo o site entrou por `?staff=1`, e vale em
+   QUALQUER tela — usado pra mostrar controles de staff dentro do ticket
+   do cliente (ex.: encerrar oficialmente), não só dentro do painel. */
+let modoStaff = false;
 let docAberto = null;                    // documento legal aberto
 let tkPasso = -1;                        // ticket: -1 = acha o passo real sozinho
 /* O PONTO MAIS ALTO QUE O PEDIDO JÁ ALCANÇOU — nunca desce, mesmo quando
@@ -4430,6 +4444,21 @@ function esqueceSenhas(){
   for (const k in senhaViva) delete senhaViva[k];
   for (const k in EST.campos) if (ehCampoSenha(k)) delete EST.campos[k];
   salvar();
+}
+/* ENCERRAR OFICIALMENTE — só a staff faz isso, nunca o cliente sozinho.
+   Ela, 05/08: "a senha só deve 'dessalvar' quando a gente entregar e
+   encerrar o chat com o cliente. Porque às vezes até quando entrega,
+   falta algo e precisa entrar de novo. É igual é no bot do discord. É só
+   quando a staff oficialmente fechar a ordem dado como tudo resolvido e
+   entregue — mas isso fica com a staff, não com o cliente." Antes disso
+   a senha continua guardada mesmo depois do cliente confirmar que
+   recebeu — as duas coisas são independentes de propósito. */
+function encerrarTicketOficialmente(){
+  esqueceSenhas();
+  const ped = EST.pedidos[0];
+  if (ped) ped.encerradoOficialmente = true;
+  salvar();
+  recadinho("Encerrado. O acesso salvo deste pedido foi apagado.");
 }
 /* Redesenha SEM perder onde a pessoa estava nem o cursor do campo.
    Isto é o coração de "os campos são digitáveis": o render() reconstrói o HTML
@@ -10210,6 +10239,20 @@ function passoCumprido(p, fl, g){
       const ch = (fl.gid === "mir4gold")
         ? "gold:servidor"
         : "jogo:" + (g ? g.ch : "") + ":" + fl.gid + ":" + c;
+      /* ⚠ BUG DE VERDADE, achado em 05/08 clicando como cliente clica (não
+         simulando estado): campo de senha nunca podia ficar "cumprido"
+         depois de pago, porque `esqueceSenhas()` apaga a senha da memória
+         NO MOMENTO de gerar o Pix (ver o handler de "GERAR PIX") — e este
+         checava se a senha AINDA estava na memória pra decidir se a etapa
+         foi feita. Resultado: o próprio ato de pagar apagava a prova de
+         que os dados foram enviados, e "Preenchendo conta" nunca destravava
+         — travava pra sempre pedindo tudo de novo, exatamente o que ela
+         via e eu não tinha conseguido reproduzir clicando de verdade antes.
+         Se existe um pedido, `faltaPreencher()` já obrigou TODO campo
+         (senha inclusa) a estar preenchido no momento de criar o pedido —
+         então senha nunca precisa ser checada aqui: ela já foi validada e
+         seu apagamento depois é intencional, não sinal de etapa incompleta. */
+      if (ehCampoSenha(ch)) return true;
       return String(campo(ch, "")).trim().length > 0;
     });
   }
@@ -10767,6 +10810,25 @@ function telaTicket(){
                                 : 'bandeira <code>' + esc(p.b) + '</code>') +
       '</span></div>' +
     '</div>' +
+
+    /* CONTROLE DE STAFF: encerrar oficialmente, e só assim apagar o acesso
+       guardado. Ela, 05/08: "isso fica com a staff, não com o cliente" —
+       nunca aparece pro cliente normal, só em ?staff=1. */
+    (() => {
+      if (!modoStaff) return "";
+      const temSenha = (fl.campos || []).some(c => /senha|password/i.test(c));
+      if (!temSenha) return "";
+      const chaveSenha = "jogo:" + g.ch + ":" + fl.gid + ":" +
+        fl.campos.find(c => /senha|password/i.test(c));
+      const viva = !!senhaViva[chaveSenha];
+      return '<div class="staff-tk"><span class="staff-tk-ic">&#9881;</span>' +
+        (viva
+          ? '<span>acesso ainda guardado, aguardando o fim de verdade</span>' +
+            '<button data-encerrar-oficial="1">encerrar oficialmente ' +
+            '(apaga o acesso salvo)</button>'
+          : '<span>acesso já apagado — encerrado oficialmente</span>') +
+        '</div>';
+    })() +
     avisoTwd +
 
     /* a esteira agora TRAVA: passo depois do primeiro obrigatório não cumprido
@@ -14268,6 +14330,8 @@ function render(){
                         tkPasso = v === "0" ? 0 : tkPasso + 1; render(); });
   document.querySelectorAll("[data-tkir]").forEach(b =>
     b.onclick = () => { tkPasso = parseInt(b.dataset.tkir, 10); render(); });
+  document.querySelectorAll("[data-encerrar-oficial]").forEach(b =>
+    b.onclick = () => { encerrarTicketOficialmente(); render(); });
   document.querySelectorAll("[data-tkabrir]").forEach(b =>
     b.onclick = () => { aba = "ticket"; papelAberto = null;
                         render(); window.scrollTo(0,0); });
@@ -14711,7 +14775,14 @@ function render(){
       hora: relogio(),
     });
     carrinho.length = 0;
-    esqueceSenhas();        /* o pedido saiu: a senha some, como ela mandou */
+    /* esqueceSenhas() SAIU DAQUI — ela, 05/08: "a senha só deve 'dessalvar'
+       quando a gente entregar e encerrar o chat com o cliente... às vezes
+       até quando entrega, falta algo e precisa entrar de novo... é só
+       quando a staff oficialmente fechar a ordem... isso fica com a
+       staff, não com o cliente." Igual o bot: apagar no momento de PAGAR
+       era cedo demais — o fornecedor ainda nem tinha acesso à conta.
+       Agora só é apagada quando a staff encerra o ticket de verdade (ver
+       `encerrarTicketOficialmente()`). */
     salvar();
     pixAberto = n; aba = "pagar"; render(); window.scrollTo(0, 0);
   };
@@ -15034,6 +15105,7 @@ document.getElementById("btPerfil").onclick = e => {
    abaixo neste mesmo script, mas `function` é hoisted — chamar aqui já
    funciona. */
 if (new URLSearchParams(window.location.search).get("staff") === "1"){
+  modoStaff = true;
   entrar("store"); aba = "staff"; render();
 }
 /* O ícone do carrinho abre a GAVETA, não uma tela.
