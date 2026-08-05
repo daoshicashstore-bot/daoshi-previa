@@ -3490,10 +3490,16 @@ a.rod-l:hover{color:var(--rc)}
   box-shadow:0 0 14px -3px var(--gold)}
 .item.tem{border-color:var(--gold);
   background:linear-gradient(180deg,rgba(255,215,0,.11),rgba(255,215,0,.03))}
-.item .menos{position:absolute;bottom:6px;left:6px;width:26px;height:26px;display:grid;
-  place-items:center;font-family:var(--mono);font-size:15px;line-height:1;color:var(--t2);
-  border:1px solid var(--linha2);background:var(--dark);z-index:2}
-.item .menos:hover{color:var(--magenta);border-color:var(--magenta);background:rgba(255,20,147,.12)}
+/* Ela, 05/08, com print: "acho que é melhor ser em cima e em vermelho.
+   Fundo vermelho, com - em branco" — morava embaixo, cinza, some do olho
+   perto do resto do card. Sobe pro canto de cima (espelhando o selo "3"
+   dourado, que já mora em cima à direita) e fica vermelho o tempo todo,
+   não só no hover. */
+.item .menos{position:absolute;top:-8px;left:-8px;width:22px;height:22px;display:grid;
+  place-items:center;font-family:var(--mono);font-size:14px;font-weight:800;line-height:1;
+  color:#fff;background:var(--magenta);border:2px solid var(--dark);z-index:2;
+  box-shadow:0 0 10px -2px var(--magenta)}
+.item .menos:hover{background:#ff3366}
 /* piscada de confirmação quando entra no carrinho */
 @keyframes pulou{0%{transform:scale(1)}45%{transform:scale(1.05)}100%{transform:scale(1)}}
 .item.pulo{animation:pulou .28s ease-out}
