@@ -2044,11 +2044,12 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .gcban h1{font-size:clamp(21px,3.2vw,34px);font-weight:800;letter-spacing:-.02em;
   line-height:1.18;margin-top:8px}
 .gcban p{color:var(--t2);font-size:15px;margin-top:8px;max-width:60ch}
-.gcban-num{display:flex;gap:32px;flex-wrap:wrap;margin-top:16px}
-.gcban-num div{display:flex;flex-direction:column}
-.gcban-num b{font-size:21px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
-.gcban-num span{font-family:var(--mono);font-size:11px;letter-spacing:.13em;
-  text-transform:uppercase;color:var(--t3)}
+/* menor — ela: "isso ta bonito mas acho que pode ser um pouco menor e sem
+   aquilo de '30 vendedores' etc, deixa só a explicação DO QUE é" */
+.gcban.peq .gcban-txt{padding:22px 28px}
+.gcban.peq h1{font-size:clamp(18px,2.4vw,26px);margin-top:6px}
+.gcban.peq p{font-size:13.5px;margin-top:6px}
+.gcban.peq .gcban-mas{width:76px}
 
 /* TÍTULO DE SEÇÃO — copiado do desenho: ícone, nome, linha pontilhada que
    atravessa o vão, e o "ver todos" na ponta. A linha é o que amarra os dois
@@ -3105,6 +3106,12 @@ a.rod-l:hover{color:var(--rc)}
 .bidres{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
   margin-top:12px;padding-top:12px;border-top:1px solid var(--linha);flex-wrap:wrap}
 .bidres .v{font-size:21px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+/* "você paga" -> "o vendedor recebe" lado a lado — a transparência da taxa
+   que ela pediu: "A TAXA SEMPRE VAI SER DE QUEM CRIA ANUNCIO". */
+.bidres2{display:flex;align-items:center;gap:16px;margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--linha);flex-wrap:wrap}
+.bidres2 .v{font-size:21px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.bidres-seta{color:var(--t3);font-size:18px}
 .bt-bid{background:var(--gold);color:var(--dark);font-size:13.5px;font-weight:800;padding:12px 16px}
 .bt-bid:hover{filter:brightness(1.08)}
 
@@ -4075,8 +4082,14 @@ const PORTAS = {
    Cabeçalho é para a porta onde a pessoa está, não para o site inteiro. */
 const ABAS = {
   store:    [["games","Games"],["giftcards","Giftcards"],["cripto","Criptomoedas"]],
-  gamecoin: [["mercado","Mercado"],["encomenda","Encomendas"],["vendedores","Vendedores"],
-             ["vender","Quero vender"]],
+  /* Ordem e nomes trocados — o irmão dela: "quando a pessoa quer comprar
+     moedas de jogo... a primeira pergunta de quem chega aqui é: eu quero
+     comprar ou vender?". "Mercado"/"Encomendas" eram nomes de tela, não
+     de intenção — agora o menu já fala a língua de quem chega: comprar,
+     vender, ou ofertar (ficar esperando no preço que quer). "Vendedores"
+     (o ranking de reputação) é secundário, foi para o fim. */
+  gamecoin: [["mercado","Comprar"],["vender","Vender"],["encomenda","Ofertar"],
+             ["vendedores","Vendedores"]],
   market:   [["contas","Contas"],["reroll","Contas reroll"],["servicos","Serviços"],
              ["vender","Quero anunciar"]]
 };
@@ -6516,21 +6529,31 @@ function trilho(passo){
     '</div></div></div>').join("") + '</div>';
 }
 
-/* ================= ENCOMENDA (bid) ================= */
+/* ================= ENCOMENDA (bid) — "faça sua própria oferta" =================
+   Ela: "A TAXA SEMPRE VAI SER DE QUEM CRIA ANUNCIO! Exemplo: Comprador:
+   Quanto voce deseja pagar? R$35,00 anuncio para o vendedor: 'Voce vai
+   receber: 31,50'. Ou seja, a gente ja remove a taxa para ser mais facil o
+   vendedor compreender, sem novas duvidas." Quem faz a encomenda (o
+   comprador) paga exatamente o que digitou — nem mais, nem menos. A taxa
+   sai do lado de quem PREENCHE a encomenda (o vendedor que aceitar), do
+   mesmo jeito que já sai de quem anuncia venda em `telaVender()`. Por
+   isso `bres2` mostra os dois números, lado a lado: o que o comprador
+   paga, e o que o vendedor que aceitar recebe. */
 function telaEncomenda(){
   const un = o => o.qtd > 0 ? o.total / o.qtd : 0;
   const vendas = D.ymir.livro.filter(o => un(o) > 0).map(o => un(o)).sort((a,b) => a - b);
   const menor = vendas.length ? vendas[0] : 0;
   const regioes = Object.keys(D.ymir.regioes || {});
   const servs = Object.keys(D.ymir.servidores || {});
+  const at = patenteAtual();
 
   return '<div class="env">' +
-    '<div class="bloco"><h3>Encomenda</h3>' +
-    '<p>Se nenhuma oferta te agrada, <b>você diz quanto paga e espera</b>. A encomenda fica no ' +
-    'mural e some assim que um vendedor aceitar. É o outro lado do mercado — hoje o teu Ymir ' +
-    'só tem quem vende.</p></div>' +
+    '<div class="bloco"><h3>Faça sua própria oferta</h3>' +
+    '<p>Se nenhuma oferta te agrada, <b>você diz quanto paga e fica na fila de ofertas em ' +
+    'espera</b>. Some da fila assim que um vendedor aceitar. É o outro lado do mercado — ' +
+    'hoje o teu Ymir só tem quem vende.</p></div>' +
 
-    '<div class="bidbox"><div style="font-size:15px;font-weight:800">Abrir encomenda</div>' +
+    '<div class="bidbox"><div style="font-size:15px;font-weight:800">Quanto você deseja pagar?</div>' +
     '<div class="bidgrade">' +
       '<div class="bidc"><label>quantidade</label>' +
         '<input id="bq" type="number" min="1" step="any" value="500" inputmode="decimal"></div>' +
@@ -6541,19 +6564,26 @@ function telaEncomenda(){
       '<div class="bidc"><label>servidor</label><select id="bs">' +
         servs.map(s => '<option>' + esc(s) + '</option>').join("") + '</select></div>' +
     '</div>' +
-    '<div class="bidres"><div><div style="font-size:12px;color:var(--t3)">Você vai pagar</div>' +
-      '<div class="v" id="btotal">' + brl(500 * menor) + '</div>' +
-      '<div style="font-size:12px;color:var(--t3)" id="bcomp">a oferta mais barata hoje está em ' +
-      brl(menor) + ' a unidade</div></div>' +
-      '<button class="bt-bid">Publicar encomenda</button></div></div>' +
+    '<div class="bidres2">' +
+      '<div><div style="font-size:12px;color:var(--t3)">Você vai pagar</div>' +
+      '<div class="v" id="btotal">' + brl(500 * menor) + '</div></div>' +
+      '<div class="bidres-seta">&rarr;</div>' +
+      '<div><div style="font-size:12px;color:var(--t3)">O vendedor que aceitar recebe</div>' +
+      '<div class="v" id="brecebe" style="color:var(--verde)">' +
+      brl(500 * menor * (1 - at.taxa/100)) + '</div></div>' +
+    '</div>' +
+    '<div style="font-size:12px;color:var(--t3);margin-top:4px" id="bcomp">a oferta mais barata hoje está em ' +
+    brl(menor) + ' a unidade</div>' +
+    '<button class="bt-bid">Publicar oferta</button></div>' +
 
     '<div class="bloco"><h3>Como o negócio anda</h3>' +
     '<p>Os dois lados veem esta mesma linha, e cada um é avisado quando a vez vira dele. ' +
     'É isso que tira o atraso: ninguém fica esperando sem saber que estava esperando por si mesmo.</p>' +
     trilho(3) + '</div>' +
 
-    '<div class="bloco"><h3>Encomendas abertas agora</h3>' +
-    '<p>Se você tem gold, aceitar tira a encomenda do mural na hora.</p>' +
+    '<div class="bloco"><h3>Ofertas em espera</h3>' +
+    '<p>Compradores em espera, esperando alguém vender. Se você tem gold, aceitar tira a ' +
+    'oferta da fila na hora.</p>' +
     '<div class="anuncios" style="padding:12px 0 0">' +
     D.ymir.livro.slice(0, 5).map((o,i) => {
       const p = un(o) * (0.96 - i*0.01);
@@ -6570,9 +6600,16 @@ function telaEncomenda(){
 function ligaEncomenda(){
   const q = document.getElementById("bq"), p = document.getElementById("bp");
   if (!q || !p) return;
+  const taxa = patenteAtual().taxa;
   const upd = () => {
     const t = (parseFloat(q.value) || 0) * (parseFloat(p.value) || 0);
     document.getElementById("btotal").textContent = brl(t);
+    /* "quem cria o anúncio paga a taxa" — quem faz a encomenda (o
+       comprador) paga o valor cheio; o que muda com a taxa é o que o
+       vendedor que aceitar recebe. Ver o comentário grande no topo de
+       `telaEncomenda()`. */
+    const brecebe = document.getElementById("brecebe");
+    if (brecebe) brecebe.textContent = brl(t * (1 - taxa/100));
   };
   q.addEventListener("input", upd); p.addEventListener("input", upd); upd();
 }
@@ -7200,11 +7237,13 @@ function volume24(j){
   if (j.vende !== "mercado") return 0;
   return D.ymir.livro.reduce((a,o) => a + (o.qtd || 0), 0);
 }
+/* O BANNER FICOU MENOR, E OS NÚMEROS SAÍRAM — ela, no lote do Gamecoin:
+   "isso ta bonito mas acho que pode ser um pouco menor e sem aquilo de
+   '30 vendedores' etc, deixa só a explicação DO QUE é". Os números
+   (vendedores/ofertas/negócios/menor preço) eram estatística de vitrine —
+   fora do lugar aqui em cima, o que interessa nesta tela é o conceito. */
 function bannerGC(){
-  const s = D.ymir.stats || {};
-  const un = o => o.qtd > 0 ? o.total / o.qtd : 0;
-  const ps = D.ymir.livro.filter(o => un(o) > 0).map(un).sort((a,b) => a-b);
-  return '<div class="gcban">' +
+  return '<div class="gcban peq">' +
     '<div class="gcban-art" aria-hidden="true">' +
       Array.from({length: 26}, (_,i) =>
         '<span style="--d:' + (i%7) + ';--h:' + (14 + (i*37)%62) + '%"></span>').join("") +
@@ -7214,12 +7253,6 @@ function bannerGC(){
       '<h1>Compre e venda moeda de jogo<br>com o dinheiro seguro</h1>' +
       '<p>Você escolhe o jogo, vê quanto está sendo pedido e quanto está sendo oferecido. ' +
       'A <b>Daoshi</b> segura o pagamento até a entrega ser confirmada por print.</p>' +
-      '<div class="gcban-num">' +
-        '<div><b>' + (s.total_vendedores || D.ymir.vitrine.length) + '</b><span>vendedores</span></div>' +
-        '<div><b>' + D.ymir.livro.length + '</b><span>ofertas abertas</span></div>' +
-        '<div><b>' + (s.total_pedidos || 0) + '</b><span>negócios fechados</span></div>' +
-        '<div><b>' + (ps.length ? brl(ps[0]) : "—") + '</b><span>menor preço hoje</span></div>' +
-      '</div>' +
     '</div>' + (D.mascote ? '<img class="gcban-mas" src="' + D.mascote + '" alt="mascote da Daoshi">' : "") +
     '</div>';
 }
@@ -7276,12 +7309,16 @@ function telaGCJogos(){
        '<b>quanto recebe limpo</b> antes de publicar, já com a taxa da sua patente.</span>' +
        '<span class="gcp-go">anunciar &rarr;</span></button>',
 
+       /* era "Não achei o que eu queria" — ela pediu, no lote seguinte:
+          "aqui fica só o QUERO COMPRAR QUERO VENDER QUERO OFERTAR / OFERTAS
+          EM ESPERA". O que o card faz não mudou (é a mesma encomenda), só
+          o nome ficou consistente com os outros dois "quero". */
        '<button class="gcp-c" data-gcvez="encomenda" style="--gc:var(--info)">' +
        '<span class="gcp-ic">&#9744;</span>' +
-       '<span class="gcp-t">Não achei o que eu queria</span>' +
-       '<span class="gcp-d">Deixe uma encomenda dizendo jogo, quantidade e quanto ' +
-       'paga. Quem tiver aparece — funciona ao contrário da vitrine.</span>' +
-       '<span class="gcp-go">fazer encomenda &rarr;</span></button>'
+       '<span class="gcp-t">Quero ofertar</span>' +
+       '<span class="gcp-d">Diga o jogo, a quantidade e quanto paga, e fique na fila de ' +
+       'ofertas em espera. Quem tiver para vender te acha por ali.</span>' +
+       '<span class="gcp-go">ver ofertas em espera &rarr;</span></button>'
       ].join("") + '</div>' +
 
     placa("Mercados abertos", abertos.length + (abertos.length === 1 ? " jogo" : " jogos")) +
@@ -7290,8 +7327,10 @@ function telaGCJogos(){
       /* preco e contagem so' existem de verdade para quem tem D.ymir.livro
          (vende==="mercado"). Pro MIR4 (vende==="daoshi") nao inventa numero -
          mostra que e' estoque proprio, sem "a partir de" chutado. */
+      /* "a partir de" saiu — ela: "aqui ta legal, mas remove o 'a partir
+         de' deixa a pessoa entrar e descobrir". */
       const info = g.vende === "mercado"
-        ? '<span class="gcp"><span class="gcpl">a partir de</span>' +
+        ? '<span class="gcp"><span class="gcpl">&nbsp;</span>' +
           '<b>' + brl(porLote(menor, g)) + '</b>' +
           '<span class="gcv">por ' + rotLote(g) + ' &middot; ' + D.ymir.livro.length +
           ' ofertas</span></span>'
@@ -7320,11 +7359,13 @@ function telaGCJogos(){
 
     '<div class="painel" style="margin-top:12px"><span class="cant2 tr"></span>' +
     '<span class="cant2 bl"></span>' +
+    /* Citava concorrentes pelo nome (GGMax, G2G) — ela: "NUNCA cite
+       concorrentes". Texto novo é o dela, quase palavra por palavra. */
     '<div class="placa"><span class="pt2">por que aqui é diferente</span>' +
     '<span class="orn"></span></div><div style="padding:16px">' +
-    mascoteFala("Na GGMax e na G2G você olha anúncio por anúncio e adivinha se o preço está bom. " +
-      "Aqui você vê <b>os dois lados do mercado</b> — quem vende e quem encomenda — e o preço " +
-      "aparece sozinho. É a mesma tela que você já conhece da casa de leilão de qualquer MMO.", 84) +
+    mascoteFala("A Daoshi liga rapidamente vendedores e compradores, e garante que você " +
+      "construa reputação e receba cashback em todas as esferas de compra e venda do ramo " +
+      "de RMT.", 84) +
     '</div></div></div>';
 }
 
