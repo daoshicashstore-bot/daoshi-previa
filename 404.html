@@ -749,7 +749,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    conta e no rodapé.
    ===================================================================== */
 @media(max-width:1300px){.topo .tbusca{display:none}}
-@media(max-width:1000px){.sup247 .s-tx{display:none}.sup247{padding:8px 10px}}
 .logo{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:15px;
   letter-spacing:.14em;text-transform:uppercase;font-weight:800;flex:none;color:var(--txt)}
 .logo .q{width:24px;height:24px;background:var(--gold);color:var(--dark);display:grid;
@@ -1258,18 +1257,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .tbusca input{flex:1;min-width:0;background:none;border:0;color:var(--txt);
   font-family:inherit;font-size:13.5px;padding:12px 0;outline:none}
 .tbusca input::placeholder{color:var(--t3)}
-.sup247{display:flex;align-items:center;gap:8px;flex:none;font-size:12px;
-  color:var(--t2);border:1px solid var(--linha2);padding:8px 12px;
-  transition:border-color .16s,color .16s;white-space:nowrap}
-.sup247:hover{border-color:var(--verde);color:var(--verde)}
-.s-pt{width:8px;height:8px;background:var(--verde);border-radius:50%;flex:none;
-  box-shadow:0 0 0 0 var(--verde);animation:pulsa 2.4s infinite}
-@keyframes pulsa{
-  0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--verde) 60%,transparent)}
-  70%{box-shadow:0 0 0 8px transparent} 100%{box-shadow:0 0 0 0 transparent}}
-@media(prefers-reduced-motion:reduce){.s-pt{animation:none}}
-@media(max-width:1180px){.tbusca{display:none} .sup247 span:last-child{display:none}}
-@media(max-width:760px){.sup247{display:none}}
+@media(max-width:1180px){.tbusca{display:none}}
 
 /* visto recentemente */
 .vr{display:flex;gap:12px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:thin}
@@ -1291,16 +1279,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .rs-d b{color:var(--txt)}
 .rs-p{font-size:13.5px;color:var(--t3);line-height:1.5;font-style:italic;margin-top:4px}
 
-/* a trilha do checkout */
-.co-tr{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 12px}
-.co-p{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--t3);
-  border:1px solid var(--linha2);padding:8px 16px;flex:1;min-width:140px}
-.co-p i{font-style:normal;width:24px;height:24px;flex:none;display:grid;place-items:center;
-  border:1px solid var(--linha2);font-family:var(--mono);font-size:12px}
-.co-p.agora{border-color:var(--gold);color:var(--txt)}
-.co-p.agora i{border-color:var(--gold);background:var(--gold);color:var(--dark);font-weight:700}
-.co-p.feito{border-color:var(--verde);color:var(--verde)}
-.co-p.feito i{border-color:var(--verde);color:var(--verde)}
 /* o que falta preencher, listado em vez de "preencha os campos" */
 .falta{border:1px solid var(--magenta);background:color-mix(in srgb,var(--magenta) 8%,transparent);
   padding:12px 16px;margin:12px 0;font-size:13.5px;color:var(--t2)}
@@ -2546,8 +2524,8 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .an-drop:hover{border-color:var(--gold)}
 .an-drop b{color:var(--gold)}
 .an-drop span{display:block;font-size:12px;color:var(--t3);margin-top:4px}
-.an-recebo{border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 7%,var(--deep));
-  padding:12px 16px;margin-top:12px}
+.an-recebo{grid-column:1/-1;border:1px solid var(--gold);
+  background:color-mix(in srgb,var(--gold) 7%,var(--deep));padding:12px 16px;margin-top:0}
 .an-vz{font-size:13.5px;color:var(--t3)}
 .an-q{font-size:12px;color:var(--t2);line-height:1.6;margin-top:8px;
   padding-top:8px;border-top:1px solid var(--linha)}
@@ -2693,6 +2671,15 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .kv-r i{font-style:normal;color:var(--magenta)}
 .kv-r b{color:var(--txt);display:block}
 .kv-r span{color:var(--t3);display:block;margin-top:2px;font-size:12px}
+/* os dois envios do cadastro de vendedor (doc + selfie) */
+.kv-cx-t{display:block;font-size:14px;font-weight:700;margin-bottom:2px}
+.kv-cx-t span{display:block;font-size:12.5px;font-weight:400;color:var(--t3);margin-top:2px}
+/* o link discreto pro cadastro, em cima do formulário de anúncio já cadastrado */
+.anc-lk{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  flex-wrap:wrap;margin-bottom:10px;font-size:12.5px}
+.anc-lk a{color:var(--t2);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.anc-lk button{background:none;border:0;padding:0;font:inherit;font-size:12.5px;
+  color:var(--t3);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 
 /* ---- o comprovante de aceite ----
    Cada linha é um item que derruba uma defesa específica ("não fui eu", "o
@@ -3972,12 +3959,6 @@ a.rod-l:hover{color:var(--rc)}
              aria-label="buscar" autocomplete="off">
     </div>
     <div class="abas" id="abas"></div>
-    <!-- Suporte 24/7 dito no site. Ela TEM (o Discord responde em minutos, e é
-         a maior vantagem dela sobre DFG, que demora 5 dias e 19 horas) e o site
-         não dizia. 3 dos 5 concorrentes lidos põem isso no topo. -->
-    <a class="sup247" href="https://discord.gg/daoshi" target="_blank" rel="noopener"
-       title="a gente responde em minutos, não em dias">
-      <span class="s-pt"></span><span class="s-tx">Suporte 24/7</span></a>
     <button class="carr" id="btCarr" title="carrinho">
       <svg class="cr-ic" viewBox="0 0 24 24" width="18" height="18" fill="none"
            stroke="currentColor" stroke-width="2" stroke-linecap="square"
@@ -4300,6 +4281,7 @@ const EST_PADRAO = {
   decisoes: {},        /* o que a staff decidiu em cada saque, com hora */
   saques: [],
   visto: {},           /* o que ela já leu/aceitou */
+  vendedorCadastrado: false,  /* CPF + KYC feitos uma vez só, ver telaCadastroVendedor() */
 };
 let EST = JSON.parse(JSON.stringify(EST_PADRAO));
 try {
@@ -9061,18 +9043,13 @@ function telaVendedorPublico(){
    informar o vendedor sobre isso antes". Descobrir que precisa mandar selfie
    com documento só quando o dinheiro já está preso é o que enche o Reclame
    Aqui dos concorrentes. */
-function telaAnunciar(){
+/* Os quatro passos de como o Marketplace funciona — extraído para fora de
+   `telaAnunciar()` em 05/08, quando o "como funciona" (com CPF/KYC) virou
+   parte do CADASTRO DE VENDEDOR (`telaCadastroVendedor()`), não da criação
+   de cada anúncio. Ver o comentário grande lá. */
+function passosDeVendedor(){
   const R = D.mpRegras;
-  /* MESMO FORMULÁRIO PARA CRIAR E PARA EDITAR.
-     Dois formulários parecidos é onde nasce o campo que existe num e falta no
-     outro — e aqui isso significaria um anúncio editado perdendo informação
-     em silêncio. Se `anEditando` aponta para um anúncio que não existe mais
-     (ela apagou e voltou pelo histórico do navegador), volta a ser criação,
-     no mesmo espírito do `telaAnuncio()` quando o anúncio some. */
-  if (anEditando !== null && !(EST.anuncios || [])[anEditando]) anEditando = null;
-  const E = anEditando !== null ? EST.anuncios[anEditando] : null;
-  const sel = cond => cond ? " selected" : "";
-  const passos = [
+  return [
     /* "É o mesmo que a GGMax pede" saiu — regra dela, nunca citar
        concorrente na tela do cliente (o comentário no código pode, a
        tela não). */
@@ -9105,31 +9082,40 @@ function telaAnunciar(){
      "tratado como golpista por causa disso</b>.",
      "e o saque pede confirmação em duas etapas"],
   ];
+}
+/* =====================================================================
+   CADASTRO DE VENDEDOR — separado da criação de anúncio.
 
-  return '<div class="env">' +
-    placa(E ? "Editar anúncio" : "Quero anunciar", E ? "o que mudar" : "quatro passos") +
+   Ela, 05/08, direto no print: "MUITA INFO isso fica em outro lugar...
+   aqui ele tá SÓ criando o anúncio dele, o KYC e todo o restante nem
+   deveria estar aqui. primeiro ele se CADASTRA como vendedor, cadastro
+   aprovado, com todas infos que ele precisa, aí ele cria um anúncio,
+   livre leve e solto."
 
-    /* Editando, o preâmbulo (os quatro passos e "antes de publicar o
-       primeiro") vira estorvo: ela já vendeu, já leu, e veio corrigir o
-       preço. Some, e no lugar entra o que ela precisa aqui — qual anúncio é,
-       e como sair sem alterar nada. */
-    (E
-      ? '<div class="painel" style="border-top:0"><span class="cant2 tr"></span>' +
-        '<span class="cant2 bl"></span><div style="padding:16px">' +
-        '<div class="olho" style="--mc2:var(--gold);margin:0"><span class="oi">&#9673;</span>' +
-        '<span>Editando <b>' + esc(E.n || "(sem título)") + '</b>. ' +
-        'O que você salvar troca o que está na vitrine.</span></div>' +
-        '<button class="btn-mmo vazio" style="--bc:var(--t3);width:100%;margin-top:10px" ' +
-        'id="btCancelaEd">sair sem alterar nada</button>' +
-        '</div></div>'
-      : '') +
+   Isto aqui é o cadastro: uma vez só, com o CPF, o "como funciona" e o
+   documento+selfie do KYC. Depois de `EST.vendedorCadastrado = true`,
+   `telaAnunciar()` pula direto para o formulário do anúncio, sem repetir
+   nada disto — nem para o segundo anúncio, nem para o décimo.
 
-    (E ? '' :
+   O envio do documento/selfie é só TELA E FLUXO, sem armazenamento de
+   verdade — decisão dela, 04/08: "Constrói a tela e o fluxo, mas SEM
+   implementar o armazenamento ainda". Onde guardar isso com segurança de
+   verdade (e se a lei permite pedir) é decisão jurídica, não de código —
+   ver `d["verificacao"]` e `telaVerificacao()`, que já documentam a
+   política pretendida. */
+function telaCadastroVendedor(){
+  const doc = EST.campos["kyc:doc"], selfie = EST.campos["kyc:selfie"];
+  const passos = passosDeVendedor();
+  const pronto = !!doc && !!selfie && termoOk;
+  return '<div class="env">' + placa("Cadastro de vendedor", "uma vez só, vale para sempre") +
+
     '<div class="painel" style="border-top:0"><span class="cant2 tr"></span>' +
     '<span class="cant2 bl"></span><div style="padding:16px">' +
     mascoteFala("Anunciar exige <b>CPF verificado</b> — e comprar aqui também. " +
       "<b>Um CPF, uma conta.</b> Sem isso não existe a quem cobrar quando dá errado, " +
-      "e é justamente por existir a quem cobrar que dá para confiar no site.", 84) +
+      "e é justamente por existir a quem cobrar que dá para confiar no site. " +
+      "É rápido e <b>só precisa ser feito uma vez</b> — depois disso, criar um anúncio " +
+      "novo é só jogo, preço e print.", 84) +
     '<div class="dep" style="margin-top:12px"><div class="dep-t">como funciona</div>' +
     passos.map((p, i) =>
       '<div class="dep-p"><span class="dp-n">' + (i+1) + '</span>' +
@@ -9139,22 +9125,93 @@ function telaAnunciar(){
 
     '<div class="painel" style="margin-top:12px"><span class="cant2 tr"></span>' +
     '<span class="cant2 bl"></span>' +
-    '<div class="placa"><span class="pt2">antes de publicar o primeiro</span>' +
+    '<div class="placa"><span class="pt2">verificar quem você é</span><span class="orn"></span>' +
+    '</div><div style="padding:16px">' +
+      [["doc", "Documento com foto", "RG ou CNH, frente e verso, legível", doc],
+       ["selfie", "Selfie com o documento",
+        "você segurando ele, junto com um papel escrito à mão com a data de hoje", selfie]]
+      .map(k =>
+        '<div class="kv-cx" style="margin-bottom:12px">' +
+        '<div class="kv-cx-t">' + esc(k[1]) + '<span>' + esc(k[2]) + '</span></div>' +
+        (k[3]
+          ? '<div class="pr-ok"><span class="pr-ok-ic">&#10003;</span>' +
+            '<span class="pr-ok-tx"><b>enviado</b><i>' + esc(k[3]) + '</i></span>' +
+            '<button class="pr-tira" data-kyctira="' + k[0] + '">trocar</button></div>'
+          : '<button class="btn-mmo vazio" style="--bc:var(--light);width:100%" ' +
+            'data-kycenvia="' + k[0] + '">escolher arquivo</button>')
+        + '</div>').join("") +
+      '<div class="seguro">Fica guardado com a gente e não aparece para ninguém — nem para ' +
+      'quem compra de você.</div>' +
+    '</div></div>' +
+
+    '<div class="painel" style="margin-top:12px"><span class="cant2 tr"></span>' +
+    '<span class="cant2 bl"></span>' +
+    '<div class="placa"><span class="pt2">antes de confirmar o cadastro</span>' +
     '<span class="orn"></span></div><div style="padding:16px">' +
     (termoOk
-      ? '<div class="seguro" style="margin:0 0 12px">Você já leu e aceitou os cinco pontos. ' +
-        'Pode anunciar.</div>' +
+      ? '<div class="seguro" style="margin:0 0 12px">Você já leu e aceitou os cinco pontos.</div>' +
         '<button class="btn-mmo" style="--bc:var(--gold);width:100%" data-tmabre="ler">' +
         'reler os cinco pontos</button>'
       : '<p style="font-size:13.5px;color:var(--t2);line-height:1.6;margin-bottom:12px">' +
         'São <b>cinco coisas</b> que mudam a sua vida como vendedor: quando você recebe, ' +
         'o que você garante ao anunciar, e o que acontece se o comprador abrir disputa. ' +
         'Ninguém publica sem ler.</p>' +
-        '<button class="btn-mmo" style="--bc:var(--verde);width:100%" data-tmabre="anunciar">' +
-        'LER OS CINCO PONTOS E ANUNCIAR</button>') +
+        '<button class="btn-mmo" style="--bc:var(--verde);width:100%" data-tmabre="cadastro">' +
+        'LER OS CINCO PONTOS</button>') +
     '<button class="btn-mmo vazio" style="--bc:var(--light);width:100%;margin-top:8px" ' +
     'data-doc="termos">ler o texto completo dos termos</button>' +
-    '</div></div>') +
+    '</div></div>' +
+
+    '<button class="btn-mmo" id="btCadVendedor" style="--bc:var(--verde);width:100%;' +
+    'margin-top:4px" ' + (pronto ? "" : "disabled") + '>' +
+    (pronto ? "CADASTRAR COMO VENDEDOR" : "falta " +
+      [!doc && "o documento", !selfie && "a selfie", !termoOk && "aceitar os cinco pontos"]
+      .filter(Boolean).join(", ")) +
+    '</button>' +
+  '</div>';
+}
+function telaAnunciar(){
+  /* MESMO FORMULÁRIO PARA CRIAR E PARA EDITAR.
+     Dois formulários parecidos é onde nasce o campo que existe num e falta no
+     outro — e aqui isso significaria um anúncio editado perdendo informação
+     em silêncio. Se `anEditando` aponta para um anúncio que não existe mais
+     (ela apagou e voltou pelo histórico do navegador), volta a ser criação,
+     no mesmo espírito do `telaAnuncio()` quando o anúncio some. */
+  if (anEditando !== null && !(EST.anuncios || [])[anEditando]) anEditando = null;
+  const E = anEditando !== null ? EST.anuncios[anEditando] : null;
+  const R = D.mpRegras;
+  const sel = cond => cond ? " selected" : "";
+
+  /* NEM CADASTRADA, NEM EDITANDO: manda cadastrar primeiro. Uma linha, um
+     botão — o formulário do anúncio nem aparece até isso existir. */
+  if (!E && !EST.vendedorCadastrado)
+    return '<div class="env">' + placa("Quero anunciar") +
+      '<div class="painel" style="border-top:0"><span class="cant2 tr"></span>' +
+      '<span class="cant2 bl"></span><div style="padding:16px">' +
+      mascoteFala("Antes do primeiro anúncio, tem um <b>cadastro de vendedor</b> — CPF e " +
+        "verificação de identidade. É uma vez só: <b>o próximo anúncio (e todos depois " +
+        "dele) já nascem sem passar por isso de novo</b>.", 84) +
+      '<button class="btn-mmo" style="--bc:var(--verde);width:100%;margin-top:12px" ' +
+      'data-rod="ir:vendercadastro">CADASTRAR COMO VENDEDOR</button>' +
+      '</div></div></div>';
+
+  return '<div class="env">' +
+    placa(E ? "Editar anúncio" : "Quero anunciar", E ? "o que mudar" : "livre, leve e solto") +
+
+    /* Editando, o preâmbulo vira estorvo: ela já vendeu, já leu, e veio
+       corrigir o preço. Some, e no lugar entra o que ela precisa aqui —
+       qual anúncio é, e como sair sem alterar nada. */
+    (E
+      ? '<div class="painel" style="border-top:0"><span class="cant2 tr"></span>' +
+        '<span class="cant2 bl"></span><div style="padding:16px">' +
+        '<div class="olho" style="--mc2:var(--gold);margin:0"><span class="oi">&#9673;</span>' +
+        '<span>Editando <b>' + esc(E.n || "(sem título)") + '</b>. ' +
+        'O que você salvar troca o que está na vitrine.</span></div>' +
+        '<button class="btn-mmo vazio" style="--bc:var(--t3);width:100%;margin-top:10px" ' +
+        'id="btCancelaEd">sair sem alterar nada</button>' +
+        '</div></div>'
+      : '<div class="anc-lk"><a data-rod="ir:vendercadastro">ver meu cadastro de vendedor</a>' +
+        '<button data-tmabre="ler">reler os cinco pontos</button></div>') +
 
     /* O FORMULÁRIO.
        A simulação do Diego achou o único BLOQUEIA do site: a tela explicava
@@ -9219,6 +9276,12 @@ function telaAnunciar(){
         '<label>Preço<input id="anPreco" type="number" min="1" step="0.01" ' +
           'value="' + (E && E.p ? E.p : "") + '" ' +
           'placeholder="0,00"></label>' +
+        /* "aqui falta oq eu falei, Preço anunciado: X / O que voce vai
+           receber: Y" — ela, no print, apontando bem para o campo Preço.
+           `anRecebo` já existia (calculado ao vivo em `ligaAnunciar()`),
+           só morava lá embaixo do formulário inteiro, longe de onde ela
+           acabou de digitar o preço. Mesmo id, lugar novo. */
+        '<div class="an-recebo" id="anRecebo"></div>' +
         /* PODER E NÍVEL EM NÚMERO — é o que destrava os dois cursores do
            desenho. Opcional de propósito: nem todo jogo mede assim (no
            Valorant é "Imortal 2", que não é número), e obrigar o vendedor a
@@ -9276,7 +9339,6 @@ function telaAnunciar(){
           '<b>' + R.retencaoConta + ' dias</b></div>' +
       '</div>' +
 
-      '<div class="an-recebo" id="anRecebo"></div>' +
       '<div class="seguro">Anúncio sem print vende bem menos, e é o primeiro pedido ' +
       'de quem comenta. <b>Prints ficam guardados</b> e valem como prova se der disputa.</div>' +
       '<button class="btn-mmo" style="--bc:var(--verde);width:100%;margin-top:8px" ' +
@@ -9578,7 +9640,7 @@ function telaDados(){
     '<span>Guardar <b>e-mail, nickname e servidor</b> para a próxima compra. ' +
     '<b style="color:var(--t3);text-decoration:none;cursor:default">A senha nunca ' +
     'é guardada.</b></span></label>';
-  return '<div class="env">' + trilhaCo(1) +
+  return '<div class="env">' + placa("Seus dados") +
     '<div class="jpag" style="padding-top:0"><div>' +
 
     (blocos.length ? blocos.map((b, i) =>
@@ -9734,20 +9796,12 @@ function ligaGatePagamento(){
   };
 }
 
-/* a trilha do checkout, para a pessoa saber onde está e quanto falta.
-
-   A ORDEM É DELA, textual em 02/08:
-     "carrinho > login e senha + print do pack > pagamento > chat com a staff"
-
-   O 4º passo não é uma tela de compra — é onde a pessoa CAI depois de pagar, e
-   está na trilha de propósito: mostrar o chat desde o carrinho é o que responde,
-   antes de acontecer, os 68% de tickets que perguntam "e agora?". */
-function trilhaCo(n){
-  const passos = ["Carrinho", "Dados e print", "Pagamento", "Chat com a staff"];
-  return '<div class="co-tr">' + passos.map((p, i) =>
-    '<span class="co-p ' + (i < n ? "feito" : i === n ? "agora" : "") + '">' +
-    '<i>' + (i < n ? "&#10003;" : (i+1)) + '</i>' + esc(p) + '</span>').join("") + '</div>';
-}
+/* A BARRA "1 Carrinho · 2 Dados e print · 3 Pagamento · 4 Chat com a staff"
+   SAIU. Ela, 05/08: "no carrinho, ainda tá pedindo todos aqueles passos
+   completamente inúteis" — confirmado depois como sendo esta barra
+   (`trilhaCo()`). Cada tela já tem o próprio título (`placa(...)`) e o
+   carrinho lateral sempre mostra onde a pessoa está; a barra só repetia
+   isso maior, ocupando espaço no topo de toda tela do checkout. */
 
 /* CARRINHO VAZIO NÃO PODE VIRAR CHECKOUT.
    Achado por `achar-armadilhas.py`: o botão "GERAR PIX · R$ 0,00" existia,
@@ -9804,7 +9858,7 @@ function telaPagar(){
      ==================================================================== */
   const falta = faltaPreencher();
   if (falta.length)
-    return '<div class="env">' + trilhaCo(1) +
+    return '<div class="env">' + placa("Pagamento") +
       '<div class="painel" style="margin-top:14px"><span class="cant2 tr"></span>' +
       '<span class="cant2 bl"></span>' +
       '<div class="placa"><span class="pt2">falta preencher antes de pagar</span>' +
@@ -13956,6 +14010,7 @@ function render(){
   else if (aba === "redes") h = telaRedes();
   else if (aba === "sobre") h = telaSobre();
   else if (aba === "prazos") h = telaPrazos();
+  else if (aba === "vendercadastro") h = telaCadastroVendedor();
   else if (aba === "staff") h = telaStaff();
   else if (aba === "perfil") h = telaPerfil();
   else if (porta === "store")
@@ -14721,8 +14776,37 @@ function render(){
       termoNa = null;
       if (destino === "comprar"){ aba = "ticket"; jogoAberto = null; anuncioAberto = null; }
       else if (destino === "anunciar"){ porta = "market"; aba = "vender"; }
+      else if (destino === "cadastro"){ porta = "market"; aba = "vendercadastro"; }
       render(); window.scrollTo(0,0);
     });
+  /* ---- CADASTRO DE VENDEDOR: os dois envios do KYC (doc + selfie), e o
+     botão final. Mesma lógica do seletor de arquivo do print de compra
+     (`data-prbota`), só que gravando em `kyc:doc`/`kyc:selfie` — ainda sem
+     armazenamento de verdade, ver o comentário grande em
+     `telaCadastroVendedor()`. */
+  document.querySelectorAll("[data-kycenvia]").forEach(b =>
+    b.onclick = () => {
+      const chave = "kyc:" + b.dataset.kycenvia;
+      const i = document.createElement("input");
+      i.type = "file"; i.accept = "image/*";
+      i.onchange = () => {
+        if (!i.files || !i.files[0]) return;
+        EST.campos[chave] = i.files[0].name || "enviado";
+        salvar(); render();
+      };
+      i.click();
+    });
+  document.querySelectorAll("[data-kyctira]").forEach(b =>
+    b.onclick = () => { delete EST.campos["kyc:" + b.dataset.kyctira]; salvar(); render(); });
+  const btCad = document.getElementById("btCadVendedor");
+  if (btCad) btCad.onclick = () => {
+    if (btCad.disabled) return;
+    EST.vendedorCadastrado = true;
+    registraAceite("Cadastro de vendedor");
+    salvar();
+    aba = "vender"; render(); window.scrollTo(0,0);
+    recadinho("Cadastro feito. Agora é só criar o anúncio.");
+  };
   document.querySelectorAll("[data-rod]").forEach(b =>
     b.onclick = () => {
       const [k, v] = b.dataset.rod.split(":");
@@ -14738,7 +14822,8 @@ function render(){
          sem esta linha caíam no `else` e viravam perfilAba inexistente */
       else if (v === "afiliado" || v === "orgs" || v === "regras" || v === "manual" ||
              v === "lista" || v === "verificar" || v === "aceite" ||
-             v === "antifraude" || v === "sobre" || v === "prazos"){ aba = v; }
+             v === "antifraude" || v === "sobre" || v === "prazos" ||
+             v === "vendercadastro"){ aba = v; }
       else if (v === "blog"){ porta = "store"; aba = "comunidade"; }
       else { aba = "perfil"; perfilAba = v; }
       render(); window.scrollTo(0,0);
