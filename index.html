@@ -2472,16 +2472,19 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .cr-m{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--t3);margin-top:2px;font-weight:400}
 .cr-q{display:flex;align-items:center;gap:8px}
-.qb{width:24px;height:24px;border:1px solid var(--linha2);color:var(--t2);font-size:13.5px;
-  display:grid;place-items:center}
+.qb{width:26px;height:26px;border:1px solid var(--linha2);color:var(--txt);font-size:16px;
+  font-weight:700;display:grid;place-items:center}
 .qb:hover{border-color:var(--gold);color:var(--gold)}
 .cr-q b{font-variant-numeric:tabular-nums;min-width:14px;text-align:center}
 .cr-p{text-align:right;font-size:15px;font-weight:800;color:var(--gold);
   font-variant-numeric:tabular-nums}
 .cr-cb{display:block;font-family:var(--mono);font-size:11px;color:var(--verde);
   font-weight:400;letter-spacing:.05em;margin-top:2px}
-.cr-x{color:var(--t3);font-size:17px}
-.cr-x:hover{color:var(--magenta)}
+/* mesma correção do "-" da gaveta: caixa de verdade, não texto solto */
+.cr-x{width:26px;height:26px;display:grid;place-items:center;color:var(--t2);
+  font-size:17px;border:1px solid var(--linha2)}
+.cr-x:hover{color:var(--magenta);border-color:var(--magenta);
+  background:color-mix(in srgb,var(--magenta) 8%,transparent)}
 .cr-conta{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-top:12px;
   padding-top:12px;border-top:1px solid var(--linha);font-size:12px;color:var(--t3)}
 .cr-conta b{color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.06em}
@@ -3451,16 +3454,26 @@ a.rod-l:hover{color:var(--rc)}
 .gl-j{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--t3);margin-top:2px;font-weight:400}
 .gl-q{display:flex;align-items:center;gap:2px;margin-top:4px}
-.gl-b{width:22px;height:22px;border:1px solid var(--linha2);color:var(--t2);font-size:13.5px;
-  display:grid;place-items:center;line-height:1;font-family:var(--mono)}
+/* "Quase não enxerguei o sinal de -" — amiga dela, 05/08. O botão já tinha
+   caixa e borda, mas a cor de repouso (`--t2`, apagada) e o remover sem
+   caixa nenhuma (só texto solto em `--t3`, ainda mais apagado) faziam os
+   dois se misturarem com o resto da linha. Agora o "−" tem contraste de
+   verdade parado, sem precisar de hover pra aparecer, e o remover virou
+   uma caixinha do mesmo tamanho/peso — não é mais só um texto sublinhado
+   torcendo pra alguém reparar. */
+.gl-b{width:24px;height:24px;border:1px solid var(--linha2);color:var(--txt);font-size:15px;
+  font-weight:700;display:grid;place-items:center;line-height:1;font-family:var(--mono)}
 .gl-b:hover{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,.09)}
 .gl-q b{min-width:26px;text-align:center;font-family:var(--mono);font-size:13.5px;
   font-variant-numeric:tabular-nums}
 .gl-d{text-align:right;white-space:nowrap}
 .gl-p{font-size:13.5px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
 .gl-cb{display:block;font-family:var(--mono);font-size:11px;color:var(--verde);margin-top:2px}
-.gl-x{display:block;margin-top:4px;font-size:11px;color:var(--t3)}
-.gl-x:hover{color:var(--magenta)}
+.gl-x{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px;
+  margin-left:auto;width:fit-content;padding:3px 8px;font-size:11px;color:var(--t2);
+  border:1px solid var(--linha2)}
+.gl-x:hover{color:var(--magenta);border-color:var(--magenta);
+  background:color-mix(in srgb,var(--magenta) 8%,transparent)}
 .gv-vazio{padding:24px 4px;text-align:center;color:var(--t3);font-size:13.5px;line-height:1.7}
 .gv-vazio img{width:74px;image-rendering:pixelated;display:block;margin:0 auto 12px;opacity:.85}
 /* quanto falta para o próximo degrau — motiva sem enganar */
@@ -14001,6 +14014,20 @@ function render(){
   const c = PORTAS[porta].cor;
   document.documentElement.style.setProperty("--c", c);
   document.getElementById("logoNome").textContent = PORTAS[porta].nome;
+
+  /* "DUAS LUPAS" — dois amigos dela, testando por conta própria e sem se
+     falar, viram a mesma coisa: a busca do cabeçalho (`.tbusca`, sempre
+     visível) e a busca da vitrine (`.busca`, dentro dos filtros de Games)
+     apareciam JUNTAS, fazendo a mesma coisa, na mesma tela. O comentário
+     de `.tbusca` já dizia isso — "ela tem uma gêmea grande na vitrine" —
+     só que nunca escondia uma quando a outra aparecia. A do cabeçalho
+     existe pra buscar de QUALQUER lugar (Gamecoin, Marketplace...); na
+     vitrine de Games ela é redundante, porque a gêmea já está bem ali.
+     Esconde só nesse caso específico — em todo o resto do site continua
+     a única busca visível. */
+  const tbusca = document.querySelector(".tbusca");
+  if (tbusca) tbusca.style.display =
+    (porta === "store" && aba === "games" && !jogoAberto) ? "none" : "";
   /* ÍCONE EM CADA ITEM DO MENU — recortado do desenho dela (02/08).
      Só as três abas da Store têm ícone no desenho; as outras seguem em texto,
      que é melhor do que eu inventar ícone que não combina com o resto. */
