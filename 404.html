@@ -213,9 +213,13 @@
 .maq .mq-t{min-width:0}
 /* o ✕ sai do fluxo para o texto ficar centralizado de verdade — com ele
    dentro do flex a frase fica sempre alguns pixels à esquerda do meio */
-.maq .mq-x{position:absolute;right:14px;top:50%;transform:translateY(-50%);
-  font-size:17px;line-height:1;color:#f3e8ff;opacity:.6;padding:0 4px}
-.maq .mq-x:hover{opacity:1}
+/* o ✕ media 20×17px — pequeno demais pra acertar com o dedo. A ÁREA subiu
+   pra 44×44 sem o símbolo crescer (`display:grid` + `place-items:center`),
+   então o desenho da faixa não muda e o alvo passa a ser acertável. */
+.maq .mq-x{position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:44px;height:44px;display:grid;place-items:center;
+  font-size:17px;line-height:1;color:#f3e8ff;opacity:.6;padding:0}
+.maq .mq-x:hover,.maq .mq-x:focus-visible{opacity:1}
 .maq.off{display:none}
 /* no celular a faixa inteira comia um quarto da tela: lá fica só a frase que
    importa, e o resto é escondido */
@@ -2950,6 +2954,13 @@ table.ext tr.saque td{background:rgba(255,215,0,.05)}
 .rod-l{display:flex;align-items:center;gap:8px;text-align:left;font-size:13.5px;color:var(--t2);
   padding:4px 0;text-decoration:none;transition:color .14s}
 .rod-l:hover{color:var(--txt)}
+/* no celular os links do rodapé tinham 29px de altura — o dedo erra e
+   acerta o de cima. Vale para o e-mail e o cupom sugerido também. */
+@media(max-width:820px){
+  .rod-l{min-height:44px;padding:8px 0}
+  .rod-mail{display:inline-flex;align-items:center;min-height:44px}
+  .cupom-sug{min-height:44px;padding:0 8px}
+}
 a.rod-l:hover{color:var(--rc)}
 .rd-ic{width:17px;height:17px;display:grid;place-items:center;font-size:11px;
   border:1px solid var(--linha2);color:var(--rc);flex:none}
