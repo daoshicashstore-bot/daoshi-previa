@@ -3653,23 +3653,131 @@ body{padding-bottom:calc(60px + env(safe-area-inset-bottom,0px))}
   border:1px solid var(--gold);color:var(--gold);padding:2px 8px;background:rgba(255,215,0,.08)}
 .tk-est .q{display:block;font-size:11px;color:var(--t3);margin-top:4px}
 
-/* a esteira de passos, na horizontal, mostrando onde parou */
-.esteira{display:flex;gap:0;margin:12px 0 0;border:1px solid var(--linha2);
-  background:rgba(var(--esc),.24);overflow-x:auto;scrollbar-width:none}
+/* a esteira de passos — bolinha numerada + nome na MESMA linha, e a hora
+   embaixo (formato da referência visual de 05/08). Antes a bolinha ficava
+   numa linha e o nome em outra, o que fazia cada passo ocupar altura
+   demais e a barra inteira competir com o conteúdo. */
+.esteira{display:flex;gap:0;margin:0;background:rgba(var(--esc),.24);
+  overflow-x:auto;scrollbar-width:none}
 .esteira::-webkit-scrollbar{display:none}
-.es-p{flex:1;min-width:118px;padding:12px 12px;border-right:1px solid var(--linha);
-  display:flex;flex-direction:column;gap:2px;position:relative;opacity:.45}
+.es-p{flex:1;min-width:140px;padding:12px 14px;border-right:1px solid var(--linha);
+  display:flex;flex-direction:column;gap:4px;position:relative;opacity:.42;
+  text-align:left;transition:opacity .16s,background .16s}
 .es-p:last-child{border-right:0}
+.es-p:not(.preso){cursor:pointer}
+.es-p:not(.preso):hover{opacity:.85;background:rgba(var(--cla),.03)}
 .es-p.ok{opacity:1}
-.es-p.ok .es-n{border-color:var(--verde);color:var(--verde)}
+.es-p.ok .es-n{border-color:var(--verde);color:var(--dark);background:var(--verde)}
 .es-p.agora{opacity:1;background:linear-gradient(180deg,rgba(255,215,0,.11),transparent)}
-.es-p.agora .es-n{border-color:var(--gold);color:var(--dark);background:var(--gold)}
-.es-p.agora::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--gold)}
-.es-n{width:21px;height:21px;display:grid;place-items:center;font-family:var(--mono);
-  font-size:11px;font-weight:800;border:1px solid var(--linha2);color:var(--t3)}
-.es-t{font-size:12px;font-weight:700;line-height:1.25}
-.es-q{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--t3)}
+.es-p.agora .es-n{border-color:var(--gold);color:var(--dark);background:var(--gold);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 25%,transparent)}
+.es-p.agora .es-t{color:var(--gold)}
+.es-p.agora::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;
+  background:var(--gold)}
+.es-lin{display:flex;align-items:center;gap:8px;min-width:0}
+.es-n{width:22px;height:22px;flex:none;display:grid;place-items:center;border-radius:50%;
+  font-family:var(--mono);font-size:11px;font-weight:800;
+  border:1px solid var(--linha2);color:var(--t3)}
+.es-t{font-size:12.5px;font-weight:700;line-height:1.25;min-width:0}
+.es-q{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--t3);
+  padding-left:30px}
 .es-p.quem-eu .es-q{color:var(--gold)}
+
+/* =====================================================================
+   A TELA DO PEDIDO, redesenhada em 05/08 na referência visual que ela
+   mandou. O que veio de lá: esteira numerada com hora embaixo, cartão de
+   atendimento com avatar e barra de progresso, faixa de avisos, linha do
+   tempo vertical na lateral, respostas rápidas e faixa de confiança.
+
+   ⚠ O QUE NÃO VEIO, de propósito: o nome do fornecedor no cabeçalho e o
+   card "sobre o fornecedor" — ela foi explícita ("sem informar
+   fornecedor"). E as promessas absolutas do rodapé da referência
+   ("100% seguras", "garantia de 30 dias", "+12.500 clientes"), porque
+   número inventado e promessa que não se cumpre é o que ela mandou tirar
+   da vitrine hoje mesmo.
+   ===================================================================== */
+.esteira-cx{border:1px solid var(--linha2);background:var(--deep);margin-top:12px}
+.es-cab{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:9px 14px;border-bottom:1px solid var(--linha)}
+.es-cab-t{font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gold)}
+.es-ajuda{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);
+  border:1px solid var(--linha2);padding:5px 10px;border-radius:3px;transition:all .14s}
+.es-ajuda:hover{color:var(--gold);border-color:var(--gold)}
+/* o cartão de atendimento */
+.at-cx{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  border:1px solid var(--linha2);background:var(--deep);padding:14px 16px;margin-top:10px}
+.at-av{position:relative;width:56px;height:56px;flex:none;display:grid;place-items:center;
+  border:1px solid var(--gold);background:var(--dark);
+  font-family:var(--mono);font-weight:800;color:var(--gold)}
+.at-av img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.at-selo{position:absolute;right:-6px;bottom:-6px;width:20px;height:20px;display:grid;
+  place-items:center;background:var(--verde);color:var(--dark);font-size:11px;
+  font-weight:800;border:2px solid var(--deep);border-radius:50%}
+.at-quem{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
+.at-quem b{font-size:19px;font-weight:800;line-height:1.2}
+.at-rot{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--t3)}
+.at-sub{font-size:12px;color:var(--t3)}
+.at-dir{display:flex;flex-direction:column;gap:3px;align-items:flex-end;min-width:190px}
+.at-ped{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--t2)}
+.at-ped b{color:var(--gold);font-family:var(--mono)}
+.at-copia{font-size:11px;color:var(--t3);border:1px solid var(--linha2);padding:3px 7px}
+.at-copia:hover{color:var(--gold);border-color:var(--gold)}
+.at-tempo{font-size:24px;font-weight:800;color:var(--gold);line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.at-barra{width:100%;max-width:220px;height:5px;background:var(--medium);overflow:hidden}
+.at-barra i{display:block;height:100%;background:linear-gradient(90deg,var(--vibrant),var(--gold));
+  transition:width .4s}
+/* faixa de avisos de segurança */
+.av-seg{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:relative;
+  border:1px solid color-mix(in srgb,var(--gold) 40%,var(--linha2));
+  background:color-mix(in srgb,var(--gold) 7%,transparent);
+  padding:10px 40px 10px 14px;margin-top:10px;font-size:12.5px;color:var(--t2)}
+.av-seg.off{display:none}
+.av-seg b{color:var(--gold);font-size:12.5px}
+.av-i{font-size:15px}
+.av-x{position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  width:36px;height:36px;display:grid;place-items:center;font-size:18px;color:var(--t3)}
+.av-x:hover{color:var(--txt)}
+/* linha do tempo vertical, na coluna da direita */
+.hist{padding:12px 16px;display:flex;flex-direction:column}
+.hs{display:flex;align-items:flex-start;gap:12px;position:relative;padding:0 0 14px 0}
+.hs::before{content:"";position:absolute;left:8px;top:18px;bottom:0;width:1px;
+  background:var(--linha2)}
+.hs:last-child::before{display:none}
+.hs-pt{width:17px;height:17px;flex:none;border-radius:50%;display:grid;place-items:center;
+  border:2px solid var(--linha2);background:var(--deep);font-size:9px;
+  color:var(--dark);position:relative;z-index:1;margin-top:1px}
+.hs.ok .hs-pt{background:var(--verde);border-color:var(--verde)}
+.hs.agora .hs-pt{border-color:var(--gold);background:var(--gold);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 22%,transparent)}
+.hs-tx{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+.hs-tx b{font-size:13px;font-weight:600;color:var(--t2)}
+.hs.ok .hs-tx b,.hs.agora .hs-tx b{color:var(--txt)}
+.hs-tx span{font-family:var(--mono);font-size:11px;color:var(--t3)}
+.hs-selo{flex:none;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);
+  padding:2px 6px;align-self:flex-start}
+/* respostas rápidas do chat */
+.ch-rap{display:flex;gap:8px;flex-wrap:wrap;padding:10px 16px 0;flex:none}
+.ch-r{font-size:12.5px;color:var(--t2);border:1px solid var(--linha2);
+  padding:7px 13px;border-radius:14px;transition:all .14s;white-space:nowrap}
+.ch-r:hover,.ch-r:focus-visible{color:var(--gold);border-color:var(--gold);
+  background:color-mix(in srgb,var(--gold) 8%,transparent)}
+/* faixa de confiança, no rodapé do pedido */
+.conf-f{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2px;
+  border:1px solid var(--linha2);background:var(--linha2);margin-top:12px}
+.cf-i{display:flex;align-items:flex-start;gap:10px;background:var(--deep);padding:14px 16px}
+.cf-ic{font-size:17px;flex:none;line-height:1.2}
+.cf-i b{display:block;font-size:13px;color:var(--txt)}
+.cf-i i{display:block;font-style:normal;font-size:12px;color:var(--t3);
+  line-height:1.5;margin-top:2px}
+@media(max-width:640px){
+  .at-dir{align-items:flex-start;min-width:0}
+  .at-barra{max-width:100%}
+  .ch-rap{padding:10px 12px 0}
+}
 
 /* o chat do ticket — ela, 05/08: "o chat do pós-compra está bem pequeno,
    pode deixá-lo maior". Era 560px de altura MÁXIMA pro bloco inteiro
@@ -10744,7 +10852,7 @@ function passosDoGold(){
     {t:"Anuncie no mercado",  q:"você",   b:"mir4GoldAwaitingOnline"},
     {t:"Print do anúncio",    q:"você",   b:"screenshotsProvided", trava:"print"},
     {t:"Daoshi confere",      q:"Daoshi", b:"mir4GoldAwaitingReceipt"},
-    {t:"Fornecedor compra",   q:"fornecedor", b:"mir4GoldAwaitingReceipt"},
+    {t:"Em andamento",      q:"a Daoshi cuida", b:"mir4GoldAwaitingReceipt"},
     {t:"Recebeu?",            q:"você",   b:"awaitingReceipt"},
     {t:"Fechado",             q:"—",      b:"officiallyFinalized"},
   ];
@@ -10905,25 +11013,41 @@ function passosDoTicket(fl, g){
   if (fl.print) p.push({t:"Enviando prints", q:"você", b:"screenshotsProvided",
                         e:"uploading_screenshots", trava:"print"});
   p.push({t:"Aguardando Pix", q:"você", b:"isPaid", e:"awaiting_payment", trava:"pago"});
-  /* "No painel do fornecedor" é o nome que o código usa (lá está escrito
-     "no painel do chinês", que é como a equipe fala internamente — no site
-     vai o termo que o cliente entende). E é aqui que vale o limite de 10
-     minutos: passou disso sem retorno, o estado vira alerta. */
-  p.push({t:"No painel do fornecedor", q:"fornecedor", e:"paid",
+  /* ⚠ ERA "No painel do fornecedor" — e ela, 05/08, na revisão visual:
+     "sem informar fornecedor". O nome do passo entregava a estrutura
+     operacional (que existe um fornecedor, e que o pedido está no painel
+     DELE) em dois lugares visíveis: a esteira e o histórico. Virou "Em
+     andamento", que é exatamente o nome que a referência que ela mandou
+     usa nesse mesmo passo. O `limite:10` (minutos até virar alerta na
+     operação) continua igual — isso é regra interna, não texto de tela. */
+  p.push({t:"Em andamento", q:"a Daoshi cuida", e:"paid",
           limite:10,
           b:fl.forn === "sombra" ? "sombraOrderSent" :
             fl.forn ? "mir4GoldAwaitingOnline" : "mihoyoOrderSent"});
   if (gold) p.push({t:"Gold no mercado", q:"você", b:"mir4GoldAwaitingOnline"});
   if (fl.duasEtapas) p.push({t:"Código de segurança", q:"você", b:"requires2FA"});
-  p.push({t:"Pode logar", q:"fornecedor", b:"mir4GoldAwaitingReceipt"});
+  p.push({t:"Pode logar", q:"a Daoshi avisa", b:"mir4GoldAwaitingReceipt"});
   p.push({t:"Recebeu?", q:"você", b:"awaitingReceipt"});
   p.push({t:"Concluído", q:"—", b:"officiallyFinalized", e:"completed"});
   return p;
 }
+/* A HORA DE CADA PASSO. Na maquete não existe servidor guardando quando
+   cada coisa aconteceu, então derivo da hora do pedido: cada passo cumprido
+   ganha alguns minutos depois do anterior. É estável (não muda a cada
+   render, porque sai do próprio índice) e honesto — no site real isto vem
+   do carimbo de tempo de verdade que o backend já grava. */
+function horaDoPasso(i){
+  const ped = EST.pedidos[0];
+  const base = (ped && ped.hora) || relogio();
+  const [h, mi] = String(base).split(":").map(Number);
+  if (isNaN(h) || isNaN(mi)) return base;
+  const t = h * 60 + mi + i * 2;
+  return ("0" + Math.floor(t / 60) % 24).slice(-2) + ":" + ("0" + (t % 60)).slice(-2);
+}
 function msgsDoTicket(fl, ps, ate, l0){
   const M = [];
   const jog = l0.jogo, pac = l0.rot;
-  const forn = fl.forn ? "Fornecedor" : "Daoshi";
+  const forn = "Daoshi";   /* nunca "Fornecedor": quem fala com o cliente e a Daoshi (ela, 05/08: "sem informar fornecedor") */
   const põe = (tipo, quem, txt, hr, extra) =>
     M.push({tipo:tipo, quem:quem, txt:txt, hr:hr, extra:extra});
   for (let i = 0; i <= ate && i < ps.length; i++){
@@ -11065,7 +11189,7 @@ function telaTicket(){
       '<div class="vez-ac"><button class="btn-mmo" data-tkav="1" style="--bc:var(--verde)">' +
       'JÁ PAGUEI</button>' +
       '<button class="btn-mmo vazio" style="--bc:var(--t3)">copiar o código Pix</button></div></div>';
-  else if (p.t === "No painel do fornecedor")
+  else if (p.t === "Em andamento")
     /* "COMO A GENTE VIGIA ESTE PASSO" já tinha saído (ela, 05/08: "essa
        parte totalmente inútil" — expunha o limiar interno de 10 minutos
        que a staff usa, informação operacional nossa, não do cliente).
@@ -11239,7 +11363,7 @@ function telaTicket(){
        que vale, que é este. */
     vez = '<div class="vez-cx deles"><div class="vez-t">&#9679; entregue &middot; ' +
       'você tem 2 horas</div>' +
-      '<h4>O fornecedor avisou que pode logar</h4>' +
+      '<h4>Sua entrega foi concluída &mdash; pode logar</h4>' +
       '<p>Entre no jogo e confira se chegou tudo. Só confirme depois de ver com os próprios olhos.</p>' +
       /* A CONFERÊNCIA, agora com a metade que faltava.
          Lendo a GameBoost eu achei o pedaço que a minha regra não tinha:
@@ -11380,19 +11504,65 @@ function telaTicket(){
     })() +
     avisoTwd +
 
-    /* a esteira agora TRAVA: passo depois do primeiro obrigatório não cumprido
-       fica com cadeado e não abre. É o que o bot dela já faz. */
-    '<div class="esteira">' + ps.map((x,i) => {
-      const teto = ateOndePode(ps, fl, g);
-      const preso = i > teto;
-      return '<div class="es-p ' + (i < tkPasso ? "ok" : i === tkPasso ? "agora" : "") +
-      (preso ? " preso" : "") + (x.q === "você" ? " quem-eu" : "") +
-      '"' + (preso ? "" : ' data-tkir="' + i + '"') +
-      (preso ? ' title="termine o passo anterior primeiro"' : "") + '>' +
-      '<span class="es-n">' + (i < tkPasso ? "&#10003;" : preso ? "&#128274;" : (i+1)) +
+    /* ESTEIRA REDESENHADA (05/08, referência visual que ela mandou): bolinha
+       numerada em cima, nome do passo, e embaixo a hora de quando aconteceu
+       (ou de quem é a vez, se ainda não aconteceu). O passo atual ganha uma
+       barra dourada embaixo em vez de só mudar de cor.
+       Continua travando: passo depois do primeiro obrigatório não cumprido
+       fica com cadeado e não abre — é o que o bot dela já faz. */
+    '<div class="esteira-cx">' +
+      '<div class="es-cab"><span class="es-cab-t">&#10022; etapas do pedido &#10022;</span>' +
+      '<button class="es-ajuda" data-mcir="ajuda">&#9432; Central de Ajuda</button></div>' +
+      '<div class="esteira">' + ps.map((x,i) => {
+        const teto = ateOndePode(ps, fl, g);
+        const preso = i > teto;
+        const feito = i < tkPasso;
+        return '<div class="es-p ' + (feito ? "ok" : i === tkPasso ? "agora" : "") +
+        (preso ? " preso" : "") + (x.q === "você" ? " quem-eu" : "") +
+        '"' + (preso ? "" : ' data-tkir="' + i + '"') +
+        (preso ? ' title="termine o passo anterior primeiro"' : "") + '>' +
+        '<span class="es-lin">' +
+          '<span class="es-n">' + (feito ? "&#10003;" : preso ? "&#128274;" : (i+1)) +
+          '</span>' +
+          '<span class="es-t">' + esc(x.t) + '</span>' +
+        '</span>' +
+        '<span class="es-q">' + esc(feito || i === tkPasso ? horaDoPasso(i) : x.q) +
+        '</span></div>'; }).join("") + '</div>' +
+    '</div>' +
+
+    /* CARTÃO DE ATENDIMENTO — a "cara" do pedido, no formato da referência
+       que ela mandou. ⚠ SEM NADA DE FORNECEDOR: a referência tinha o nome
+       dele no cabeçalho e um card inteiro "sobre o fornecedor"; ela foi
+       explícita ("sem informar fornecedor"), então aqui é a Daoshi que
+       atende — que é o que o cliente vê de qualquer jeito. */
+    '<div class="at-cx">' +
+      '<span class="at-av">' +
+        (D.mascote ? '<img src="' + D.mascote + '" alt="">' : "D") +
+        '<span class="at-selo">&#10003;</span></span>' +
+      '<span class="at-quem"><span class="at-rot">Atendimento do pedido</span>' +
+        '<b>Daoshi Support</b>' +
+        '<span class="at-sub">a conversa fica guardada e vale como prova</span></span>' +
+      '<span class="at-dir">' +
+        '<span class="at-ped">Pedido <b>#' + esc(numeroDoPedido()) + '</b>' +
+          '<button class="at-copia" data-copiaped="' + esc(numeroDoPedido()) + '" ' +
+          'aria-label="Copiar o número do pedido">&#128203; copiar</button></span>' +
+        '<span class="at-rot">Entrega estimada</span>' +
+        '<b class="at-tempo">' + esc(m.prazo) + '</b>' +
+        '<span class="at-barra"><i style="width:' +
+          Math.min(100, Math.round((tkPasso / Math.max(1, ps.length - 1)) * 100)) +
+          '%"></i></span>' +
       '</span>' +
-      '<span class="es-t">' + esc(x.t) + '</span>' +
-      '<span class="es-q">' + esc(x.q) + '</span></div>'; }).join("") + '</div>' +
+    '</div>' +
+
+    /* faixa de avisos de segurança, como na referência — e o conteúdo é o
+       que ela já repete no Discord */
+    '<div class="av-seg" id="avSeg">' +
+      '<span class="av-i">&#128737;</span>' +
+      '<b>Avisos importantes</b>' +
+      '<span>&middot; Nunca compartilhe o código de verificação com ninguém.</span>' +
+      '<span>&middot; A Daoshi nunca pede pagamento extra pelo chat.</span>' +
+      '<button class="av-x" aria-label="Fechar os avisos">&times;</button>' +
+    '</div>' +
 
     /* e diz POR QUE está travado, em vez de só não deixar clicar */
     (() => { const teto = ateOndePode(ps, fl, g);
@@ -11451,10 +11621,33 @@ function telaTicket(){
          Achado pela auditoria que ela mandou fazer ("quantas coisas mais devem
          estar nessa situação?"). Agora é campo de verdade, e o que for escrito
          entra na MESMA conversa que já vinha do carrinho. */
+      /* RESPOSTAS RÁPIDAS — da referência visual que ela mandou. São as
+         frases que o cliente mais escreve no Discord, viradas em botão:
+         menos digitação no celular e resposta mais rápida. Cada uma só
+         preenche o campo; quem envia continua sendo a pessoa. */
+      '<div class="ch-rap">' +
+        ["Recebi", "Ainda não", "Obrigado!", "Preciso de ajuda"].map(r =>
+          '<button class="ch-r" data-chrap="' + esc(r) + '">' + esc(r) +
+          '</button>').join("") +
+      '</div>' +
       '<div class="ch-cx">' +
       '<input class="fk" id="chPedido" type="text" autocomplete="off" ' +
       'placeholder="Escreva para o pedido…" aria-label="mensagem para o pedido">' +
-      '<button class="env2" id="chEnviar">ENVIAR</button></div></div>' +
+      '<button class="env2" id="chEnviar">&#10148; ENVIAR</button></div></div>' +
+
+    /* FAIXA DE CONFIANÇA — o rodapé da referência. ⚠ SEM as promessas
+       absolutas que estavam lá ("100% seguras", "satisfação garantida",
+       "garantia de 30 dias", "+12.500 clientes"): número inventado e
+       promessa que não se cumpre é exatamente o que ela mandou tirar da
+       vitrine hoje. O visual é o mesmo; o texto é o que a Daoshi cumpre. */
+    '<div class="conf-f">' + [
+      ["&#128737;", "Compra protegida", "o dinheiro fica com a Daoshi até você confirmar"],
+      ["&#9993;", "Suporte de gente", "a mesma equipe que responde no Discord"],
+      ["&#128274;", "O acesso é descartado", "a senha some quando o pedido fecha"],
+      ["&#9733;", "Vale como prova", "a conversa inteira fica guardada no pedido"],
+    ].map(c => '<div class="cf-i"><span class="cf-ic">' + c[0] + '</span>' +
+      '<span><b>' + c[1] + '</b><i>' + c[2] + '</i></span></div>').join("") +
+    '</div>' +
 
     '</div>' +
 
@@ -11476,6 +11669,24 @@ function telaTicket(){
         '<div class="tot"><span>Pago</span><b>' + brl(tot) +
         '<span class="em">Pix &middot; 02:44</span></b></div>' +
       '</div></div>' +
+
+      /* HISTÓRICO DO PEDIDO — a linha do tempo vertical da referência que
+         ela mandou. Mesma informação da esteira de cima, só que em coluna e
+         com hora: lá em cima serve pra navegar, aqui serve pra conferir o
+         que já aconteceu sem precisar clicar em nada. */
+      '<div class="painel" style="margin-top:12px"><span class="cant2 tr"></span>' +
+      '<span class="cant2 bl"></span>' +
+      '<div class="placa"><span class="pt2">histórico do pedido</span>' +
+      '<span class="orn"></span></div>' +
+      '<div class="hist">' + ps.map((x, i) => {
+        const feito = i < tkPasso, agora = i === tkPasso;
+        return '<div class="hs' + (feito ? " ok" : agora ? " agora" : "") + '">' +
+          '<span class="hs-pt">' + (feito ? "&#10003;" : "") + '</span>' +
+          '<span class="hs-tx"><b>' + esc(x.t) + '</b>' +
+          '<span>' + (feito || agora ? esc(horaDoPasso(i))
+                                     : "aguardando") + '</span></span>' +
+          (agora ? '<span class="hs-selo">em andamento</span>' : "") +
+        '</div>'; }).join("") + '</div></div>' +
 
       /* RECIBO E NOTA FISCAL — item 5 da lista dela */
       '<button class="doc-bt" data-papel="recibo"><span class="di">&#9635;</span>' +
@@ -14872,6 +15083,34 @@ function render(){
                         tkPasso = v === "0" ? 0 : tkPasso + 1; render(); });
   document.querySelectorAll("[data-tkir]").forEach(b =>
     b.onclick = () => { tkPasso = parseInt(b.dataset.tkir, 10); render(); });
+  /* ---- os controles novos da tela do pedido (redesenho de 05/08) ---- */
+  document.querySelectorAll("[data-copiaped]").forEach(b =>
+    b.onclick = async () => {
+      try { await navigator.clipboard.writeText("#pedido-" + b.dataset.copiaped);
+            recadinho("Número do pedido copiado."); }
+      catch(e){ recadinho("Não consegui copiar — o número é <b>#pedido-" +
+                          esc(b.dataset.copiaped) + "</b>."); }
+    });
+  /* resposta rápida só PREENCHE o campo; quem envia continua sendo a
+     pessoa — botão que manda mensagem sozinho no chat de um pedido é
+     jeito rápido de alguém dizer o que não queria */
+  document.querySelectorAll("[data-chrap]").forEach(b =>
+    b.onclick = () => {
+      const c = document.getElementById("chPedido");
+      if (!c) return;
+      c.value = b.dataset.chrap;
+      try { c.focus({preventScroll: true}); } catch(e){ c.focus(); }
+    });
+  const avS = document.querySelector("#avSeg .av-x");
+  if (avS) avS.onclick = () => {
+    document.getElementById("avSeg").classList.add("off");
+    EST.visto.avisoSeg = 1; salvar();
+  };
+  /* quem já fechou o aviso uma vez não vê de novo */
+  if (EST.visto.avisoSeg){
+    const a = document.getElementById("avSeg");
+    if (a) a.classList.add("off");
+  }
   document.querySelectorAll("[data-encerrar-oficial]").forEach(b =>
     b.onclick = () => { encerrarTicketOficialmente(); render(); });
   document.querySelectorAll("[data-tkabrir]").forEach(b =>
