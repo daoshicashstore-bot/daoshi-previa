@@ -1,0 +1,36 @@
+{
+ "gerado_por": "coleta/conferir-assets.py",
+ "build": "previa-cliente",
+ "arquivos": [
+  {
+   "caminho": "404.html",
+   "tipo": "pagina",
+   "bytes": 998091,
+   "digital": "dfa9cb6975d56b55"
+  },
+  {
+   "caminho": "_headers",
+   "tipo": "outro",
+   "bytes": 39,
+   "digital": "a6dfcc21602c175a"
+  },
+  {
+   "caminho": "arte.js",
+   "tipo": "codigo",
+   "bytes": 640868,
+   "digital": "e8c44952cfb73699"
+  },
+  {
+   "caminho": "index.html",
+   "tipo": "pagina",
+   "bytes": 998091,
+   "digital": "dfa9cb6975d56b55"
+  },
+  {
+   "caminho": "robots.txt",
+   "tipo": "texto",
+   "bytes": 28,
+   "digital": "a8f31103361fca68"
+  }
+ ]
+}
